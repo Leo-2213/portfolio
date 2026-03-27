@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Abhijeet Atmapoojya — Backend Engineer</title>
+<meta name="description" content="Backend Engineer with 3+ years of experience designing scalable microservices using Java, Spring Boot, and REST APIs." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  :root {
+    --bg: #080c10;
+    --bg2: #0d1117;
+    --surface: #111820;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5bf;
+    --accent2: #ff6b35;
+    --accent3: #7c5cfc;
+    --text: #e8edf2;
+    --muted: #6b7d8f;
+    --glow: 0 0 40px rgba(0,229,191,0.15);
+  }
+  [data-theme="light"] {
+    --bg: #f5f3ef;
+    --bg2: #ede9e3;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.08);
+    --accent: #008f77;
+    --accent2: #e05a20;
+    --accent3: #5c3df5;
+    --text: #1a1f26;
+    --muted: #6b7d8f;
+    --glow: 0 0 40px rgba(0,143,119,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    overflow-x: hidden;
+    transition: background 0.4s, color 0.4s;
+  }
+  ::selection { background: var(--accent); color: #000; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content:'';
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.45;
+  }
+
+  /* CANVAS */
+  #hero-canvas { position:absolute; inset:0; z-index:0; }
+
+  /* TYPOGRAPHY */
+  .font-display { font-family: 'Syne', sans-serif; }
+  .font-serif  { font-family: 'Instrument Serif', serif; }
+
+  /* GLASS */
+  .glass {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+  }
+  [data-theme="light"] .glass {
+    background: rgba(255,255,255,0.6);
+  }
+
+  /* GLOW LINE */
+  .glow-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.5;
+  }
+
+  /* ACCENT TAG */
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    display: inline-block;
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s cubic-bezier(.22,1,.36,1), transform 0.7s cubic-bezier(.22,1,.36,1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-left { opacity:0; transform:translateX(-40px); transition: opacity 0.7s cubic-bezier(.22,1,.36,1), transform 0.7s cubic-bezier(.22,1,.36,1); }
+  .reveal-left.visible { opacity:1; transform:translateX(0); }
+  .reveal-right { opacity:0; transform:translateX(40px); transition: opacity 0.7s cubic-bezier(.22,1,.36,1), transform 0.7s cubic-bezier(.22,1,.36,1); }
+  .reveal-right.visible { opacity:1; transform:translateX(0); }
+
+  /* STAGGER */
+  .stagger-1 { transition-delay: 0.05s; }
+  .stagger-2 { transition-delay: 0.12s; }
+  .stagger-3 { transition-delay: 0.19s; }
+  .stagger-4 { transition-delay: 0.26s; }
+  .stagger-5 { transition-delay: 0.33s; }
+  .stagger-6 { transition-delay: 0.40s; }
+
+  /* CURSOR GLOW */
+  .cursor-glow {
+    position: fixed;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,191,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    transition: transform 0.08s linear;
+  }
+
+  /* HERO TEXT ANIMATION */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .cursor-blink { animation: blink 1s infinite; }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  .float { animation: float 5s ease-in-out infinite; }
+
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent) 0%, #00b8ff 40%, var(--accent3) 70%, var(--accent) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 4s ease infinite;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* NAVBAR */
+  .nav-link {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    transition: color 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .nav-link::after {
+    content:'';
+    position:absolute; bottom:-3px; left:0; width:0; height:1px;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+  .nav-link:hover { color: var(--accent); }
+  .nav-link:hover::after { width:100%; }
+  .nav-link.active { color: var(--accent); }
+  .nav-link.active::after { width:100%; }
+
+  /* SKILL BAR */
+  .skill-fill {
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 1px;
+    width: 0;
+    transition: width 1.2s cubic-bezier(.22,1,.36,1);
+  }
+
+  /* TIMELINE */
+  .timeline-line {
+    position:absolute; left: 0; top:0; bottom:0; width:1px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+  }
+  .timeline-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* CARD HOVER */
+  .card-hover {
+    transition: transform 0.3s cubic-bezier(.22,1,.36,1), box-shadow 0.3s, border-color 0.3s;
+  }
+  .card-hover:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: var(--glow);
+    border-color: rgba(0,229,191,0.3);
+  }
+
+  /* BUTTON */
+  .btn-primary {
+    position: relative; overflow: hidden;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,191,0.35); }
+  .btn-outline {
+    position: relative; overflow: hidden;
+    background: transparent;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 11px 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, color 0.2s, border-color 0.2s;
+    border: 1px solid var(--border);
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+  /* SECTION */
+  .section { padding: 96px 0; position:relative; z-index:2; }
+
+  /* CHIP */
+  .chip {
+    font-size:0.68rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(0,229,191,0.08);
+    color: var(--accent);
+    border: 1px solid rgba(0,229,191,0.2);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+    transition: background 0.2s;
+  }
+  .chip:hover { background: rgba(0,229,191,0.18); }
+
+  /* SECTION HEADER */
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+
+  /* CONTACT FORM */
+  .form-input {
+    width:100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,191,0.08);
+  }
+  .form-input::placeholder { color: var(--muted); }
+  textarea.form-input { resize: vertical; min-height: 120px; }
+
+  /* MOBILE NAV */
+  @media (max-width: 768px) {
+    .mobile-nav { display: flex; }
+    .desktop-nav { display: none; }
+    .section { padding: 64px 0; }
+  }
+  @media (min-width: 769px) {
+    .mobile-nav { display: none; }
+    .desktop-nav { display: flex; }
+  }
+
+  /* PROGRESS RING */
+  @keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .spin-slow { animation: spin-slow 12s linear infinite; }
+
+  /* GRID BG */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(0,229,191,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,191,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+</style>
+</head>
+<body data-theme="dark">
+<div id="root"></div>
+<canvas id="hero-canvas" style="display:none"></canvas>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ─── DATA ─────────────────────────────────────────────────── */
+const DATA = {
+  name: "Abhijeet Atmapoojya",
+  role: "Backend Engineer",
+  tagline: "Building scalable microservices that power reliable production systems.",
+  email: "abhiatmapoojya@gmail.com",
+  linkedin: "https://www.linkedin.com/in/abhijeet-atmapoojya/",
+  leetcode:"https://leetcode.com/u/Leo22_99/",
+  github: "https://github.com/Leo-2213",
+  location: "Bengaluru, Karnataka, India",
+  phone: "+91 7566159804",
+  summary: "Backend Engineer with 3+ years of experience designing scalable microservices using Java, Spring Boot, and REST APIs. Proficient in CI/CD, Docker, and secure backend development, with strong fundamentals in DSA, OOP, and clean architecture — building reliable production systems in Agile teams.",
+  strengths: ["Microservices Architecture", "Secure Backend Dev", "CI/CD Automation", "System Reliability"],
+  experience: [
+    {
+      role: "Software Engineer",
+      company: "Epsilon",
+      period: "Aug 2023 – Present",
+      type: "Full-time",
+      achievements: [
+        "Designed a client-facing dashboard (Java + Spring Boot) enabling partner-specific code selection and quarterly data slicing.",
+        "Developed RESTful APIs on microservices principles, reducing inter-service coupling and improving scalability.",
+        "Dockerized services and integrated Jenkins CI/CD with Maven for consistent multi-environment deployments.",
+        "Led unit & integration testing with JUnit and Mockito; reduced production defects significantly.",
+        "Resolved 400+ Veracode-identified security vulnerabilities via library upgrades, ensuring compliance."
+      ]
+    },
+    {
+      role: "Software Engineer Intern",
+      company: "Epsilon",
+      period: "Feb 2023 – Aug 2023",
+      type: "Internship",
+      achievements: [
+        "Designed Jenkins pipelines to automate daily security scans and CI/CD jobs using Veracode.",
+        "Configured pipelines to generate biweekly security and test reports for stakeholders.",
+        "Upgraded Angular framework from v15 to v17 and supported REST API integrations."
+      ]
+    }
+  ],
+  skills: {
+    "Languages": [
+      { name: "Java", level: 92 },
+      { name: "SQL", level: 80 },
+      { name: "C++", level: 65 }
+    ],
+    "Backend & DevOps": [
+      { name: "Spring Boot", level: 90 },
+      { name: "REST APIs", level: 88 },
+      { name: "Docker", level: 82 },
+      { name: "Jenkins", level: 80 },
+      { name: "Microservices", level: 85 },
+      { name: "Maven / Git", level: 85 }
+    ],
+    "Databases": [
+      { name: "MySQL", level: 80 },
+      { name: "PostgreSQL", level: 75 },
+      { name: "Liquibase", level: 65 }
+    ],
+    "Testing & Security": [
+      { name: "JUnit / Mockito", level: 85 },
+      { name: "Veracode", level: 78 },
+      { name: "Secure Coding", level: 80 }
+    ]
+  },
+  projects: [
+    {
+      title: "Events Platform",
+      desc: "A full-stack events platform connecting students across NITs, enabling event discovery, participation, and organizer tools for participant data management.",
+      stack: ["ReactJS", "NextJS", "TailwindCSS", "MongoDB"],
+      period: "Jun 2021 – Jan 2022",
+      github: "https://github.com",
+      live: null
+    }
+  ],
+  education: [
+    {
+      degree: "Master of Computer Applications",
+      institution: "NIT Karnataka, Surathkal",
+      period: "Dec 2020 – Jul 2023",
+      grade: "CGPA 8.45 / 10",
+      highlight: "National Institute of Technology"
+    }
+  ],
+  achievements: [
+    { title: "Spotlight Award", desc: "Recognized for designing and implementing a client-facing dashboard that streamlined partner code selection and quarterly data slicing at Epsilon.", icon: "⚡" },
+    { title: "AIR 91 — NIMCET 2020", desc: "Secured All India Rank 91 in the National Institute of Technology MCA Common Entrance Test among thousands of applicants nationwide.", icon: "🏆" }
+  ]
+};
+
+/* ─── HOOKS ─────────────────────────────────────────────────── */
+function useInView(options = {}) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setInView(true); obs.disconnect(); }
+    }, { threshold: 0.15, ...options });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, inView];
+}
+
+function useActiveSection() {
+  const [active, setActive] = useState("hero");
+  useEffect(() => {
+    const sections = document.querySelectorAll("section[id]");
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
+    }, { threshold: 0.4 });
+    sections.forEach(s => obs.observe(s));
+    return () => obs.disconnect();
+  }, []);
+  return active;
+}
+
+function useTyping(words, speed = 80, pause = 1800) {
+  const [text, setText] = useState("");
+  const [wordIdx, setWordIdx] = useState(0);
+  const [charIdx, setCharIdx] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+  useEffect(() => {
+    const word = words[wordIdx];
+    const delay = deleting ? speed / 2 : charIdx === word.length ? pause : speed;
+    const t = setTimeout(() => {
+      if (!deleting && charIdx < word.length) {
+        setText(word.slice(0, charIdx + 1));
+        setCharIdx(c => c + 1);
+      } else if (!deleting && charIdx === word.length) {
+        setDeleting(true);
+      } else if (deleting && charIdx > 0) {
+        setText(word.slice(0, charIdx - 1));
+        setCharIdx(c => c - 1);
+      } else {
+        setDeleting(false);
+        setWordIdx(i => (i + 1) % words.length);
+      }
+    }, delay);
+    return () => clearTimeout(t);
+  }, [text, deleting, charIdx, wordIdx]);
+  return text;
+}
+
+/* ─── PARTICLE CANVAS ──────────────────────────────────────── */
+function ParticleCanvas() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let W, H, particles = [], raf;
+    const N = 60;
+
+    function resize() {
+      W = canvas.width = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    for (let i = 0; i < N; i++) {
+      particles.push({
+        x: Math.random() * 1920,
+        y: Math.random() * 1080,
+        r: Math.random() * 1.5 + 0.3,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        a: Math.random() * 0.5 + 0.1
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      for (let p of particles) {
+        p.x = (p.x + p.vx + W) % W;
+        p.y = (p.y + p.vy + H) % H;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0,229,191,${p.a})`;
+        ctx.fill();
+      }
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 120) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(0,229,191,${0.08 * (1 - d/120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      raf = requestAnimationFrame(draw);
+    }
+    draw();
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(raf); };
+  }, []);
+  return <canvas ref={canvasRef} style={{ position:"absolute", inset:0, width:"100%", height:"100%", zIndex:0 }} />;
+}
+
+/* ─── NAVBAR ────────────────────────────────────────────────── */
+function Navbar({ theme, setTheme }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const active = useActiveSection();
+
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", h);
+    return () => window.removeEventListener("scroll", h);
+  }, []);
+
+  const links = [
+    { id:"about", label:"About" },
+    { id:"experience", label:"Experience" },
+    { id:"skills", label:"Skills" },
+    { id:"projects", label:"Projects" },
+    { id:"education", label:"Education" },
+    { id:"contact", label:"Contact" }
+  ];
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior:"smooth" });
+    setMobileOpen(false);
+  };
+
+  return (
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "glass shadow-lg" : ""}`}
+         style={{ borderBottom: scrolled ? "1px solid var(--border)" : "none" }}>
+      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
+        {/* Logo */}
+        <button onClick={() => scrollTo("hero")}
+                className="font-display font-800 text-sm tracking-widest uppercase"
+                style={{ color:"var(--accent)" }}>
+          AA<span style={{color:"var(--text)"}}>.</span>
+        </button>
+
+        {/* Desktop */}
+        <div className="desktop-nav items-center gap-8">
+          {links.map(l => (
+            <button key={l.id} onClick={() => scrollTo(l.id)}
+                    className={`nav-link ${active === l.id ? "active" : ""}`}>
+              {l.label}
+            </button>
+          ))}
+          <button onClick={() => setTheme(t => t==="dark"?"light":"dark")}
+                  className="ml-4 w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                  style={{ border:"1px solid var(--border)", background:"var(--surface)", color:"var(--muted)" }}>
+            {theme === "dark" ? "☀" : "🌙"}
+          </button>
+        </div>
+
+        {/* Mobile */}
+        <div className="mobile-nav items-center gap-3">
+          <button onClick={() => setTheme(t => t==="dark"?"light":"dark")}
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ border:"1px solid var(--border)", background:"var(--surface)" }}>
+            {theme === "dark" ? "☀" : "🌙"}
+          </button>
+          <button onClick={() => setMobileOpen(o => !o)}
+                  className="w-8 h-8 flex flex-col items-center justify-center gap-1.5">
+            <span style={{ display:"block", height:"1px", width:mobileOpen?"18px":"22px", background:"var(--text)", transform:mobileOpen?"rotate(45deg) translate(2px,3px)":"none", transition:"all 0.3s" }}></span>
+            <span style={{ display:"block", height:"1px", width:"22px", background:"var(--text)", opacity:mobileOpen?0:1, transition:"all 0.2s" }}></span>
+            <span style={{ display:"block", height:"1px", width:mobileOpen?"18px":"14px", background:"var(--text)", transform:mobileOpen?"rotate(-45deg) translate(2px,-3px)":"none", transition:"all 0.3s" }}></span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className="mobile-nav flex-col"
+           style={{ maxHeight: mobileOpen ? "300px" : "0", overflow:"hidden", transition:"max-height 0.4s cubic-bezier(.22,1,.36,1)",
+                    background:"var(--bg2)", borderBottom: mobileOpen ? "1px solid var(--border)" : "none" }}>
+        <div className="px-6 py-4 flex flex-col gap-4">
+          {links.map(l => (
+            <button key={l.id} onClick={() => scrollTo(l.id)}
+                    className={`nav-link text-left ${active === l.id ? "active" : ""}`}
+                    style={{ fontSize:"0.9rem" }}>
+              {l.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+/* ─── HERO ──────────────────────────────────────────────────── */
+function Hero() {
+  const typed = useTyping([
+    "Backend Engineer",
+    "Java Specialist",
+    "Microservices Architect",
+    "CI/CD Enthusiast",
+    "Security-First Dev"
+  ]);
+
+  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior:"smooth" });
+
+  return (
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden grid-bg">
+      <ParticleCanvas />
+
+      {/* Gradient orbs */}
+      <div style={{ position:"absolute", top:"15%", right:"10%", width:400, height:400,
+                    borderRadius:"50%", background:"radial-gradient(circle, rgba(0,229,191,0.06) 0%, transparent 70%)",
+                    filter:"blur(40px)", zIndex:1, animation:"float 7s ease-in-out infinite" }} />
+      <div style={{ position:"absolute", bottom:"20%", left:"5%", width:300, height:300,
+                    borderRadius:"50%", background:"radial-gradient(circle, rgba(124,92,252,0.07) 0%, transparent 70%)",
+                    filter:"blur(30px)", zIndex:1, animation:"float 9s ease-in-out infinite 2s" }} />
+
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-12 items-center w-full">
+        {/* Left */}
+        <div>
+          <div style={{ animation:"fadeUp 0.6s ease forwards", opacity:0, animationDelay:"0.2s" }}>
+            <span className="tag">Available for Opportunities</span>
+          </div>
+
+          <h1 className="font-display mt-6"
+              style={{ fontSize:"clamp(2.4rem,6vw,4.2rem)", fontWeight:800, lineHeight:1.08,
+                       animation:"fadeUp 0.6s ease forwards", opacity:0, animationDelay:"0.4s" }}>
+            <span style={{ color:"var(--text)" }}>Hi, I'm </span>
+            <span className="gradient-text">Abhijeet</span><br />
+            <span style={{ color:"var(--text)" }}>Atmapoojya</span>
+          </h1>
+
+          <div className="mt-4 flex items-center gap-2"
+               style={{ animation:"fadeUp 0.6s ease forwards", opacity:0, animationDelay:"0.6s" }}>
+            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:"1.1rem", color:"var(--accent)" }}>
+              {typed}
+            </span>
+            <span className="cursor-blink" style={{ color:"var(--accent)", fontSize:"1.1rem" }}>|</span>
+          </div>
+
+          <p className="mt-5 leading-relaxed"
+             style={{ color:"var(--muted)", maxWidth:480, fontSize:"0.9rem",
+                      animation:"fadeUp 0.6s ease forwards", opacity:0, animationDelay:"0.8s" }}>
+            {DATA.tagline} Designing resilient systems at{" "}
+            <span style={{ color:"var(--accent)" }}>Epsilon</span>, Bengaluru.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-4"
+               style={{ animation:"fadeUp 0.6s ease forwards", opacity:0, animationDelay:"1s" }}>
+            <button className="btn-primary" onClick={() => scrollTo("projects")}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+              </svg>
+              View Projects
+            </button>
+            <button className="btn-outline" onClick={() => scrollTo("contact")}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              Contact Me
+            </button>
+          </div>
+
+          <div className="mt-10 flex gap-6"
+               style={{ animation:"fadeUp 0.6s ease forwards", opacity:0, animationDelay:"1.2s" }}>
+            {[
+              { label:"Years Exp.", value:"3+" },
+              { label:"Vulns Fixed", value:"400+" },
+              { label:"NIMCET Rank", value:"91" }
+            ].map(s => (
+              <div key={s.label}>
+                <div className="font-display" style={{ fontSize:"1.6rem", fontWeight:800, color:"var(--accent)" }}>{s.value}</div>
+                <div style={{ fontSize:"0.65rem", color:"var(--muted)", letterSpacing:"0.1em", textTransform:"uppercase", marginTop:2 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right — floating card */}
+        <div className="flex justify-center" style={{ animation:"fadeUp 0.7s ease forwards", opacity:0, animationDelay:"0.7s" }}>
+          <div className="glass float" style={{ borderRadius:16, padding:"28px", maxWidth:320, width:"100%",
+                                                 boxShadow:"0 0 60px rgba(0,229,191,0.08), 0 20px 60px rgba(0,0,0,0.4)" }}>
+            <div className="flex items-center gap-3 mb-5">
+              <div style={{ width:48, height:48, borderRadius:12, background:"linear-gradient(135deg,var(--accent),var(--accent3))",
+                            display:"flex", alignItems:"center", justifyContent:"center",
+                            fontFamily:"Syne", fontWeight:800, fontSize:"1.1rem", color:"#000" }}>
+                AA
+              </div>
+              <div>
+                <div className="font-display" style={{ fontWeight:700, fontSize:"0.9rem" }}>Abhijeet Atmapoojya</div>
+                <div style={{ fontSize:"0.7rem", color:"var(--muted)" }}>Backend Engineer @ Epsilon</div>
+              </div>
+            </div>
+
+            <div className="glow-line mb-4" />
+
+            {[
+              { icon:"📍", text:"Bengaluru, Karnataka" },
+              { icon:"🎓", text:"MCA — NIT Karnataka" },
+              { icon:"💼", text:"3+ Years Experience" }
+            ].map(i => (
+              <div key={i.icon} className="flex items-center gap-3 mb-3" style={{ fontSize:"0.8rem", color:"var(--muted)" }}>
+                <span>{i.icon}</span><span>{i.text}</span>
+              </div>
+            ))}
+
+            <div className="glow-line mt-4 mb-4" />
+
+            <div className="flex flex-wrap gap-2">
+              {["Java","Spring Boot","Docker","Microservices"].map(t => (
+                <span key={t} className="chip">{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
+           style={{ opacity:0.5, animation:"fadeUp 0.6s ease forwards 1.8s" }}>
+        <div style={{ fontSize:"0.6rem", letterSpacing:"0.2em", color:"var(--muted)", textTransform:"uppercase" }}>scroll</div>
+        <div style={{ width:1, height:40, background:"linear-gradient(to bottom, var(--accent), transparent)" }} />
+      </div>
+    </section>
+  );
+}
+
+/* ─── ABOUT ─────────────────────────────────────────────────── */
+function About() {
+  const [ref, inView] = useInView();
+  return (
+    <section id="about" className="section" ref={ref}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className={`reveal ${inView ? "visible" : ""}`}>
+          <div className="section-num mb-2">01 / about</div>
+          <h2 className="font-display" style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800 }}>
+            About <span style={{ color:"var(--accent)" }}>Me</span>
+          </h2>
+        </div>
+
+        <div className="glow-line mt-6 mb-10" />
+
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <p className={`reveal leading-relaxed ${inView?"visible":""}`}
+               style={{ color:"var(--muted)", fontSize:"0.95rem", lineHeight:1.85 }}>
+              {DATA.summary}
+            </p>
+            <div className={`mt-8 grid grid-cols-2 gap-4 reveal stagger-2 ${inView?"visible":""}`}>
+              {DATA.strengths.map(s => (
+                <div key={s} className="glass card-hover" style={{ borderRadius:8, padding:"12px 16px", display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ color:"var(--accent)", fontSize:"1rem" }}>▸</span>
+                  <span style={{ fontSize:"0.78rem", fontWeight:500, color:"var(--text)" }}>{s}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={`reveal-right ${inView?"visible":""}`}>
+            <div className="glass" style={{ borderRadius:12, padding:28, position:"relative", overflow:"hidden" }}>
+              {/* Corner decoration */}
+              <div style={{ position:"absolute", top:0, right:0, width:80, height:80,
+                            background:"linear-gradient(225deg, rgba(0,229,191,0.12), transparent)", borderRadius:"0 12px 0 0" }} />
+              <div className="section-num mb-4">quick facts</div>
+              {[
+                { k:"Current Role", v:"Software Engineer @ Epsilon" },
+                { k:"Location", v:"Bengaluru, KA, India" },
+                { k:"Email", v:"abhiatmapoojya@gmail.com" },
+                { k:"Education", v:"MCA, NIT Karnataka" },
+                { k:"CGPA", v:"8.45 / 10" },
+                { k:"AIR", v:"91 in NIMCET 2020" }
+              ].map(({ k, v }) => (
+                <div key={k} className="flex justify-between py-3" style={{ borderBottom:"1px solid var(--border)", fontSize:"0.82rem" }}>
+                  <span style={{ color:"var(--muted)" }}>{k}</span>
+                  <span style={{ color:"var(--text)", fontWeight:500, textAlign:"right", maxWidth:"55%" }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── EXPERIENCE ─────────────────────────────────────────────── */
+function Experience() {
+  const [ref, inView] = useInView();
+  return (
+    <section id="experience" className="section" ref={ref}
+             style={{ background:"var(--bg2)" }}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className={`reveal ${inView?"visible":""}`}>
+          <div className="section-num mb-2">02 / experience</div>
+          <h2 className="font-display" style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800 }}>
+            Work <span style={{ color:"var(--accent)" }}>Experience</span>
+          </h2>
+        </div>
+        <div className="glow-line mt-6 mb-12" />
+
+        <div className="relative pl-6" style={{ borderLeft:"1px solid var(--border)" }}>
+          {DATA.experience.map((exp, i) => (
+            <div key={i} className={`relative mb-12 last:mb-0 reveal stagger-${i+1} ${inView?"visible":""}`}>
+              {/* Dot */}
+              <div style={{ position:"absolute", left:-28, top:6, width:10, height:10, borderRadius:"50%",
+                            background:"var(--accent)", boxShadow:"0 0 12px var(--accent)" }} />
+
+              <div className="glass card-hover" style={{ borderRadius:12, padding:28, marginLeft:4 }}>
+                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                  <div>
+                    <h3 className="font-display" style={{ fontSize:"1.2rem", fontWeight:700, color:"var(--text)" }}>
+                      {exp.role}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span style={{ color:"var(--accent)", fontSize:"0.85rem", fontWeight:500 }}>{exp.company}</span>
+                      <span style={{ color:"var(--border)", fontSize:"0.7rem" }}>•</span>
+                      <span className="tag" style={{ fontSize:"0.6rem", padding:"2px 8px" }}>{exp.type}</span>
+                    </div>
+                  </div>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:"0.75rem", color:"var(--muted)",
+                                  background:"var(--surface)", padding:"4px 12px", borderRadius:4,
+                                  border:"1px solid var(--border)", whiteSpace:"nowrap" }}>
+                    {exp.period}
+                  </span>
+                </div>
+                <ul className="space-y-2">
+                  {exp.achievements.map((a, j) => (
+                    <li key={j} className="flex gap-3" style={{ fontSize:"0.82rem", color:"var(--muted)", lineHeight:1.7 }}>
+                      <span style={{ color:"var(--accent)", marginTop:2, flexShrink:0 }}>›</span>
+                      <span>{a}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── SKILLS ─────────────────────────────────────────────────── */
+function SkillBar({ name, level, inView, delay }) {
+  const [filled, setFilled] = useState(false);
+  useEffect(() => {
+    if (inView) {
+      const t = setTimeout(() => setFilled(true), delay);
+      return () => clearTimeout(t);
+    }
+  }, [inView, delay]);
+
+  return (
+    <div className="mb-4">
+      <div className="flex justify-between mb-1.5" style={{ fontSize:"0.78rem" }}>
+        <span style={{ color:"var(--text)" }}>{name}</span>
+        <span style={{ color:"var(--muted)" }}>{level}%</span>
+      </div>
+      <div style={{ height:2, background:"var(--border)", borderRadius:1 }}>
+        <div className="skill-fill" style={{ width: filled ? `${level}%` : "0" }} />
+      </div>
+    </div>
+  );
+}
+
+function Skills() {
+  const [ref, inView] = useInView();
+  return (
+    <section id="skills" className="section" ref={ref}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className={`reveal ${inView?"visible":""}`}>
+          <div className="section-num mb-2">03 / skills</div>
+          <h2 className="font-display" style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800 }}>
+            Technical <span style={{ color:"var(--accent)" }}>Skills</span>
+          </h2>
+        </div>
+        <div className="glow-line mt-6 mb-12" />
+
+        <div className="grid md:grid-cols-2 gap-10">
+          {Object.entries(DATA.skills).map(([cat, skills], ci) => (
+            <div key={cat} className={`glass reveal stagger-${ci+1} ${inView?"visible":""}`}
+                 style={{ borderRadius:12, padding:28 }}>
+              <div className="flex items-center gap-3 mb-6">
+                <div style={{ width:3, height:20, background:"var(--accent)", borderRadius:2 }} />
+                <h3 className="font-display" style={{ fontWeight:700, fontSize:"0.95rem", textTransform:"uppercase", letterSpacing:"0.08em" }}>
+                  {cat}
+                </h3>
+              </div>
+              {skills.map((s, i) => (
+                <SkillBar key={s.name} {...s} inView={inView} delay={ci * 100 + i * 80} />
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Concepts chips */}
+        <div className={`mt-10 glass reveal stagger-${Object.keys(DATA.skills).length+1} ${inView?"visible":""}`}
+             style={{ borderRadius:12, padding:28 }}>
+          <div className="section-num mb-4">core concepts</div>
+          <div className="flex flex-wrap gap-2">
+            {["DSA", "OOP", "SOLID Principles", "Design Patterns", "Concurrency", "Multithreading",
+              "Hibernate", "REST APIs", "CI/CD", "Agile / Scrum", "Code Review"].map(t => (
+              <span key={t} className="chip">{t}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── PROJECTS ───────────────────────────────────────────────── */
+function Projects() {
+  const [ref, inView] = useInView();
+  return (
+    <section id="projects" className="section" style={{ background:"var(--bg2)" }} ref={ref}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className={`reveal ${inView?"visible":""}`}>
+          <div className="section-num mb-2">04 / projects</div>
+          <h2 className="font-display" style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800 }}>
+            Featured <span style={{ color:"var(--accent)" }}>Projects</span>
+          </h2>
+        </div>
+        <div className="glow-line mt-6 mb-12" />
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {DATA.projects.map((p, i) => (
+            <div key={i} className={`glass card-hover reveal stagger-${i+1} ${inView?"visible":""}`}
+                 style={{ borderRadius:12, padding:28, position:"relative", overflow:"hidden" }}>
+              {/* Glow corner */}
+              <div style={{ position:"absolute", top:0, right:0, width:100, height:100,
+                            background:"radial-gradient(circle at top right, rgba(0,229,191,0.08), transparent)",
+                            pointerEvents:"none" }} />
+
+              <div className="flex items-center justify-between mb-4">
+                <div style={{ width:40, height:40, borderRadius:10, background:"rgba(0,229,191,0.1)",
+                              display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.2rem" }}>
+                  🚀
+                </div>
+                <div className="flex gap-2">
+                  {p.github && (
+                    <a href={p.github} target="_blank" rel="noopener"
+                       className="w-8 h-8 rounded-full flex items-center justify-center glass"
+                       style={{ fontSize:"0.7rem", color:"var(--muted)", transition:"color 0.2s" }}
+                       onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"}
+                       onMouseLeave={e=>e.currentTarget.style.color="var(--muted)"}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.74-1.33-1.74-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <h3 className="font-display" style={{ fontSize:"1.2rem", fontWeight:700, marginBottom:8 }}>{p.title}</h3>
+              <p style={{ fontSize:"0.83rem", color:"var(--muted)", lineHeight:1.75, marginBottom:16 }}>{p.desc}</p>
+
+              <div className="flex flex-wrap gap-2 mb-4">
+                {p.stack.map(t => <span key={t} className="chip">{t}</span>)}
+              </div>
+
+              <div style={{ fontSize:"0.7rem", color:"var(--muted)", fontFamily:"'DM Mono',monospace" }}>
+                📅 {p.period}
+              </div>
+            </div>
+          ))}
+
+          {/* More coming */}
+          <div className={`glass reveal stagger-2 ${inView?"visible":""}`}
+               style={{ borderRadius:12, padding:28, border:"1px dashed var(--border)",
+                        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+                        minHeight:200, textAlign:"center", gap:12 }}>
+            <div style={{ fontSize:"2rem" }}>⚡</div>
+            <div className="font-display" style={{ fontWeight:700, fontSize:"0.95rem" }}>More Coming Soon</div>
+            <div style={{ fontSize:"0.8rem", color:"var(--muted)" }}>Additional projects are in progress and will be added shortly.</div>
+            <a href={DATA.github} target="_blank" rel="noopener" className="tag mt-2" style={{ cursor:"pointer" }}>
+              View GitHub →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── EDUCATION ──────────────────────────────────────────────── */
+function Education() {
+  const [ref, inView] = useInView();
+  return (
+    <section id="education" className="section" ref={ref}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className={`reveal ${inView?"visible":""}`}>
+          <div className="section-num mb-2">05 / education</div>
+          <h2 className="font-display" style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800 }}>
+            Education & <span style={{ color:"var(--accent)" }}>Achievements</span>
+          </h2>
+        </div>
+        <div className="glow-line mt-6 mb-12" />
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Education */}
+          <div>
+            <h3 className="font-display mb-6" style={{ fontWeight:700, fontSize:"1rem", textTransform:"uppercase",
+                                                         letterSpacing:"0.1em", color:"var(--muted)" }}>Academic</h3>
+            {DATA.education.map((e, i) => (
+              <div key={i} className={`glass card-hover reveal stagger-${i+1} ${inView?"visible":""}`}
+                   style={{ borderRadius:12, padding:28, position:"relative", overflow:"hidden" }}>
+                <div style={{ position:"absolute", top:0, left:0, width:4, height:"100%",
+                              background:"linear-gradient(to bottom, var(--accent), var(--accent3))",
+                              borderRadius:"12px 0 0 12px" }} />
+                <div style={{ paddingLeft:12 }}>
+                  <div className="section-num mb-2">{e.highlight}</div>
+                  <h4 className="font-display" style={{ fontSize:"1.1rem", fontWeight:700 }}>{e.degree}</h4>
+                  <div style={{ color:"var(--accent)", fontSize:"0.85rem", marginTop:4 }}>{e.institution}</div>
+                  <div className="flex items-center gap-4 mt-4">
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:"0.72rem", color:"var(--muted)",
+                                    background:"var(--surface)", padding:"4px 10px", borderRadius:4,
+                                    border:"1px solid var(--border)" }}>
+                      {e.period}
+                    </span>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:"0.72rem", color:"var(--accent)",
+                                    background:"rgba(0,229,191,0.08)", padding:"4px 10px", borderRadius:4,
+                                    border:"1px solid rgba(0,229,191,0.2)" }}>
+                      {e.grade}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Achievements */}
+          <div>
+            <h3 className="font-display mb-6" style={{ fontWeight:700, fontSize:"1rem", textTransform:"uppercase",
+                                                         letterSpacing:"0.1em", color:"var(--muted)" }}>Honors</h3>
+            {DATA.achievements.map((a, i) => (
+              <div key={i} className={`glass card-hover reveal stagger-${i+2} ${inView?"visible":""} mb-4`}
+                   style={{ borderRadius:12, padding:24, display:"flex", gap:16 }}>
+                <div style={{ width:44, height:44, borderRadius:10, background:"rgba(0,229,191,0.08)",
+                              display:"flex", alignItems:"center", justifyContent:"center",
+                              fontSize:"1.3rem", flexShrink:0 }}>
+                  {a.icon}
+                </div>
+                <div>
+                  <div className="font-display" style={{ fontWeight:700, fontSize:"0.95rem", marginBottom:6 }}>{a.title}</div>
+                  <div style={{ fontSize:"0.8rem", color:"var(--muted)", lineHeight:1.7 }}>{a.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── EMAILJS CONFIG — Fill these in after signing up at emailjs.com ── */
+const EMAILJS_SERVICE_ID  = "service_0xht74a";   // e.g. "service_abc123"
+const EMAILJS_TEMPLATE_ID = "template_1rjw3wq";  // e.g. "template_xyz789"
+const EMAILJS_PUBLIC_KEY  = "0pe61XpkCaCMcFEx8";   // e.g. "abcDEFghiJKL..."
+
+/* ─── CONTACT ────────────────────────────────────────────────── */
+function Contact() {
+  const [ref, inView] = useInView();
+  const [form, setForm] = useState({ name:"", email:"", message:"" });
+  const [status, setStatus] = useState("idle"); // idle | sending | success | error
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.email || !form.message) {
+      setStatus("error_fields");
+      return;
+    }
+    setStatus("sending");
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          from_name:    form.name,
+          from_email:   form.email,
+          message:      form.message,
+          to_name:      "Abhijeet",
+          reply_to:     form.email,
+        },
+        EMAILJS_PUBLIC_KEY
+      );
+      setStatus("success");
+      setForm({ name:"", email:"", message:"" });
+      setTimeout(() => setStatus("idle"), 5000);
+    } catch (err) {
+      console.error("EmailJS error:", err);
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 4000);
+    }
+  };
+
+  return (
+    <section id="contact" className="section" style={{ background:"var(--bg2)" }} ref={ref}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className={`reveal ${inView?"visible":""}`}>
+          <div className="section-num mb-2">06 / contact</div>
+          <h2 className="font-display" style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800 }}>
+            Let's <span style={{ color:"var(--accent)" }}>Connect</span>
+          </h2>
+        </div>
+        <div className="glow-line mt-6 mb-12" />
+
+        <div className="grid md:grid-cols-2 gap-12">
+          {/* Left info */}
+          <div className={`reveal-left ${inView?"visible":""}`}>
+            <p style={{ color:"var(--muted)", fontSize:"0.9rem", lineHeight:1.85, marginBottom:32 }}>
+              Open to full-time opportunities, collaborations, and interesting backend challenges.
+              Don't hesitate to reach out — I'd love to hear from you.
+            </p>
+
+            {[
+              { icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                ), label:"Email", value: DATA.email, href:`mailto:${DATA.email}` },
+              { icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.8 0 0 .77 0 1.72v20.56C0 23.23.8 24 1.77 24h20.44c.98 0 1.79-.77 1.79-1.72V1.72C24 .77 23.2 0 22.22 0z"/>
+                  </svg>
+                ), label:"LinkedIn", value: "Abhijeet Atmapoojya", href: DATA.linkedin },
+              { icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.74-1.33-1.74-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
+                  </svg>
+                ), label:"GitHub", value: "github.com/abhijeet", href: DATA.github },
+                { icon: (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.74-1.33-1.74-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
+                        </svg>
+                    ), label:"Leetcode", value: "https://leetcode.com/abhijeet", href: DATA.leetcode }
+            ].map(c => (
+              <a key={c.label} href={c.href} target="_blank" rel="noopener"
+                 className="glass card-hover flex items-center gap-4 mb-4"
+                 style={{ borderRadius:10, padding:"14px 20px", textDecoration:"none",
+                          transition:"border-color 0.2s, transform 0.2s, box-shadow 0.2s" }}>
+                <div style={{ width:36, height:36, borderRadius:8, background:"rgba(0,229,191,0.1)",
+                              display:"flex", alignItems:"center", justifyContent:"center", color:"var(--accent)" }}>
+                  {c.icon}
+                </div>
+                <div>
+                  <div style={{ fontSize:"0.65rem", color:"var(--muted)", letterSpacing:"0.1em", textTransform:"uppercase" }}>{c.label}</div>
+                  <div style={{ fontSize:"0.83rem", color:"var(--text)", marginTop:2 }}>{c.value}</div>
+                </div>
+                <span style={{ marginLeft:"auto", color:"var(--muted)", fontSize:"0.9rem" }}>›</span>
+              </a>
+            ))}
+          </div>
+
+          {/* Right form */}
+          <div className={`reveal-right ${inView?"visible":""}`}>
+            <div className="glass" style={{ borderRadius:12, padding:28 }}>
+              <div className="section-num mb-5">send a message</div>
+
+              {/* ── Status banners ── */}
+              {status === "success" && (
+                <div style={{ padding:"12px 16px", borderRadius:8, marginBottom:16, fontSize:"0.82rem",
+                              background:"rgba(0,229,191,0.1)", border:"1px solid rgba(0,229,191,0.3)", color:"var(--accent)",
+                              display:"flex", alignItems:"center", gap:8 }}>
+                  <span>✓</span> Message sent! I'll get back to you soon.
+                </div>
+              )}
+              {status === "error" && (
+                <div style={{ padding:"12px 16px", borderRadius:8, marginBottom:16, fontSize:"0.82rem",
+                              background:"rgba(255,107,53,0.08)", border:"1px solid rgba(255,107,53,0.3)", color:"var(--accent2)",
+                              display:"flex", alignItems:"center", gap:8 }}>
+                  <span>✕</span> Something went wrong. Please email me directly.
+                </div>
+              )}
+              {status === "error_fields" && (
+                <div style={{ padding:"12px 16px", borderRadius:8, marginBottom:16, fontSize:"0.82rem",
+                              background:"rgba(255,107,53,0.08)", border:"1px solid rgba(255,107,53,0.3)", color:"var(--accent2)",
+                              display:"flex", alignItems:"center", gap:8 }}>
+                  <span>⚠</span> Please fill in all fields before sending.
+                </div>
+              )}
+
+              <div className="mb-4">
+                <label style={{ fontSize:"0.7rem", color:"var(--muted)", letterSpacing:"0.1em",
+                                 textTransform:"uppercase", display:"block", marginBottom:8 }}>Name</label>
+                <input className="form-input" placeholder="Your name"
+                       value={form.name} onChange={e => setForm(f=>({...f, name:e.target.value}))}
+                       disabled={status === "sending"} />
+              </div>
+              <div className="mb-4">
+                <label style={{ fontSize:"0.7rem", color:"var(--muted)", letterSpacing:"0.1em",
+                                 textTransform:"uppercase", display:"block", marginBottom:8 }}>Email</label>
+                <input className="form-input" type="email" placeholder="your@email.com"
+                       value={form.email} onChange={e => setForm(f=>({...f, email:e.target.value}))}
+                       disabled={status === "sending"} />
+              </div>
+              <div className="mb-6">
+                <label style={{ fontSize:"0.7rem", color:"var(--muted)", letterSpacing:"0.1em",
+                                 textTransform:"uppercase", display:"block", marginBottom:8 }}>Message</label>
+                <textarea className="form-input" placeholder="Tell me about your project or opportunity..."
+                          value={form.message} onChange={e => setForm(f=>({...f, message:e.target.value}))}
+                          disabled={status === "sending"} />
+              </div>
+              <button className="btn-primary" onClick={handleSubmit}
+                      disabled={status === "sending"}
+                      style={{ width:"100%", justifyContent:"center",
+                               opacity: status === "sending" ? 0.7 : 1,
+                               cursor: status === "sending" ? "not-allowed" : "pointer" }}>
+                {status === "sending" ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                         style={{ animation:"spin-slow 1s linear infinite" }}>
+                      <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                    </svg>
+                    Sending…
+                  </>
+                ) : (
+                  <>
+                    Send Message
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── FOOTER ─────────────────────────────────────────────────── */
+function Footer() {
+  return (
+    <footer style={{ background:"var(--bg)", borderTop:"1px solid var(--border)", padding:"32px 24px", position:"relative", zIndex:2 }}>
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="font-display" style={{ fontWeight:800, fontSize:"1rem", color:"var(--accent)" }}>
+          AA<span style={{ color:"var(--text)" }}>.</span>
+        </div>
+        <div style={{ fontSize:"0.72rem", color:"var(--muted)", fontFamily:"'DM Mono',monospace", textAlign:"center" }}>
+          Designed & built by <span style={{ color:"var(--accent)" }}>Abhijeet Atmapoojya</span> · {new Date().getFullYear()}
+        </div>
+        <div style={{ fontSize:"0.72rem", color:"var(--muted)", fontFamily:"'DM Mono',monospace" }}>
+          Bengaluru, India 🇮🇳
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ─── CURSOR ─────────────────────────────────────────────────── */
+function CursorGlow() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    const move = (e) => {
+      el.style.left = e.clientX + "px";
+      el.style.top = e.clientY + "px";
+    };
+    window.addEventListener("mousemove", move);
+    return () => window.removeEventListener("mousemove", move);
+  }, []);
+  return <div className="cursor-glow" ref={ref} />;
+}
+
+/* ─── APP ────────────────────────────────────────────────────── */
+function App() {
+  const [theme, setTheme] = useState("dark");
+  useEffect(() => {
+    document.body.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  return (
+    <>
+      <CursorGlow />
+      <Navbar theme={theme} setTheme={setTheme} />
+      <main>
+        <Hero />
+        <About />
+        <Experience />
+        <Skills />
+        <Projects />
+        <Education />
+        <Contact />
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
