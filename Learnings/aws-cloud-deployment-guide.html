@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Cloud Deployment Guide - Complete Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF9900;
+            --primary-dark: #EC7211;
+            --bg-dark: #0A0E27;
+            --bg-card: #1a1f3a;
+            --bg-light: #f0f4f8;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a9c9;
+            --accent-blue: #0080ff;
+            --accent-green: #00d664;
+            --accent-purple: #7c3aed;
+            --accent-pink: #ec4899;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0f1535 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ============ HEADER ============ */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--primary);
+            z-index: 1000;
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* ============ HERO SECTION ============ */
+        .hero {
+            margin-top: 80px;
+            padding: 4rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(255, 153, 0, 0.1) 0%, rgba(10, 14, 39, 0) 100%);
+            border-bottom: 1px solid rgba(255, 153, 0, 0.2);
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============ ARCHITECTURE DIAGRAM ============ */
+        .architecture-section {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            text-align: center;
+            letter-spacing: -1px;
+        }
+
+        .diagram-container {
+            background: var(--bg-card);
+            border: 2px solid rgba(255, 153, 0, 0.3);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            margin-bottom: 3rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+        }
+
+        .diagram-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .flow-step {
+            background: rgba(255, 153, 0, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: floatIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .flow-step:nth-child(1) { animation-delay: 0s; }
+        .flow-step:nth-child(2) { animation-delay: 0.2s; }
+        .flow-step:nth-child(3) { animation-delay: 0.4s; }
+        .flow-step:nth-child(4) { animation-delay: 0.6s; }
+        .flow-step:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flow-step:hover {
+            background: rgba(255, 153, 0, 0.2);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(255, 153, 0, 0.2);
+        }
+
+        .flow-step-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .flow-step h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .flow-step p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .arrow {
+            display: none;
+            font-size: 2rem;
+            color: var(--primary);
+            margin: 0 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .diagram-flow {
+                flex-direction: column;
+            }
+            .arrow {
+                display: block;
+                transform: rotate(90deg);
+            }
+        }
+
+        /* ============ SERVICE TILES ============ */
+        .services-section {
+            max-width: 1400px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .category {
+            margin-bottom: 4rem;
+        }
+
+        .category-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .category-title::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .service-tile {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(26, 31, 58, 0.5) 100%);
+            border: 2px solid rgba(255, 153, 0, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent-blue));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .service-tile:hover::before {
+            transform: scaleX(1);
+        }
+
+        .service-tile:hover {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(255, 153, 0, 0.1) 0%, rgba(26, 31, 58, 0.8) 100%);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(255, 153, 0, 0.15);
+        }
+
+        .tile-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tile-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .tile-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tile-description {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .tile-usecase {
+            background: rgba(255, 153, 0, 0.05);
+            border-left: 3px solid var(--primary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .usecase-title {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .usecase-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .tile-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(255, 153, 0, 0.2);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* ============ COMPARISON TABLE ============ */
+        .comparison-section {
+            max-width: 1400px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .comparison-table {
+            background: var(--bg-card);
+            border: 2px solid rgba(255, 153, 0, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 3rem;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 1.5rem;
+            background: linear-gradient(90deg, rgba(255, 153, 0, 0.15) 0%, rgba(26, 31, 58, 0.8) 100%);
+            padding: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 2px solid rgba(255, 153, 0, 0.3);
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 153, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .table-row:hover {
+            background: rgba(255, 153, 0, 0.05);
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-cell {
+            display: flex;
+            align-items: center;
+        }
+
+        .table-service {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .badge.high {
+            background: rgba(0, 214, 100, 0.2);
+            color: var(--accent-green);
+        }
+
+        .badge.medium {
+            background: rgba(255, 153, 0, 0.2);
+            color: var(--primary);
+        }
+
+        .badge.low {
+            background: rgba(124, 58, 237, 0.2);
+            color: var(--accent-purple);
+        }
+
+        /* ============ DECISION FLOWCHART ============ */
+        .decision-section {
+            max-width: 1400px;
+            margin: 4rem auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .decision-box {
+            background: var(--bg-card);
+            border: 2px solid rgba(255, 153, 0, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .decision-box h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .decision-box p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .decision-box ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .decision-box li {
+            color: var(--text-secondary);
+            padding: 0.7rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .decision-box li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* ============ FOOTER ============ */
+        footer {
+            background: rgba(10, 14, 39, 0.8);
+            border-top: 2px solid rgba(255, 153, 0, 0.2);
+            padding: 3rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-content p {
+            margin-bottom: 1rem;
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            nav {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .tiles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header,
+            .table-row {
+                grid-template-columns: 1fr;
+            }
+
+            .diagram-flow {
+                flex-direction: column;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .category-title {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* ============ SCROLL ANIMATIONS ============ */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="header-content">
+            <div class="logo">☁️ AWS Cloud Guide</div>
+            <nav>
+                <a href="#architecture">Architecture</a>
+                <a href="#services">Services</a>
+                <a href="#comparison">Comparison</a>
+                <a href="#decision">Decision Guide</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Master AWS Cloud Deployment Architecture</h1>
+            <p>Complete guide to deploying scalable applications on AWS with the right services for every stage of your journey</p>
+        </div>
+    </section>
+
+    <!-- ARCHITECTURE DIAGRAM SECTION -->
+    <section class="architecture-section" id="architecture">
+        <h2 class="section-title">Complete Application Deployment Flow</h2>
+        
+        <div class="diagram-container">
+            <div class="diagram-flow">
+                <div class="flow-step">
+                    <div class="flow-step-icon">👨‍💻</div>
+                    <h3>Development</h3>
+                    <p>Write and test application code with version control</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">📦</div>
+                    <h3>Build & Package</h3>
+                    <p>CodeBuild creates Docker images and artifacts</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🏭</div>
+                    <h3>Registry</h3>
+                    <p>Store images in ECR (Elastic Container Registry)</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🚀</div>
+                    <h3>Deploy</h3>
+                    <p>Deploy to ECS, EKS, Lambda, or Elastic Beanstalk</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">📊</div>
+                    <h3>Monitor</h3>
+                    <p>CloudWatch logs, metrics, and performance tracking</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="diagram-container">
+            <h3 style="text-align: center; color: var(--primary); margin-bottom: 2rem;">🔄 CI/CD Pipeline Architecture</h3>
+            <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg">
+                <!-- Git/CodeCommit -->
+                <rect x="50" y="150" width="120" height="100" fill="rgba(255, 153, 0, 0.2)" stroke="#FF9900" stroke-width="2" rx="8"/>
+                <text x="110" y="200" text-anchor="middle" fill="#FF9900" font-weight="bold">CodeCommit</text>
+                <text x="110" y="230" text-anchor="middle" fill="#a0a9c9" font-size="12">(Git Repository)</text>
+
+                <!-- Arrow -->
+                <path d="M 170 200 L 210 200" stroke="#FF9900" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+                <!-- CodeBuild -->
+                <rect x="210" y="150" width="120" height="100" fill="rgba(0, 128, 255, 0.2)" stroke="#0080ff" stroke-width="2" rx="8"/>
+                <text x="270" y="200" text-anchor="middle" fill="#0080ff" font-weight="bold">CodeBuild</text>
+                <text x="270" y="230" text-anchor="middle" fill="#a0a9c9" font-size="12">(Build & Test)</text>
+
+                <!-- Arrow -->
+                <path d="M 330 200 L 370 200" stroke="#FF9900" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+                <!-- ECR -->
+                <rect x="370" y="150" width="120" height="100" fill="rgba(236, 72, 153, 0.2)" stroke="#ec4899" stroke-width="2" rx="8"/>
+                <text x="430" y="200" text-anchor="middle" fill="#ec4899" font-weight="bold">ECR</text>
+                <text x="430" y="230" text-anchor="middle" fill="#a0a9c9" font-size="12">(Container Registry)</text>
+
+                <!-- Arrow -->
+                <path d="M 490 200 L 530 200" stroke="#FF9900" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+                <!-- Deployment Target -->
+                <rect x="530" y="100" width="110" height="80" fill="rgba(0, 214, 100, 0.2)" stroke="#00d664" stroke-width="2" rx="8"/>
+                <text x="585" y="140" text-anchor="middle" fill="#00d664" font-weight="bold" font-size="11">ECS/EKS</text>
+                <text x="585" y="158" text-anchor="middle" fill="#a0a9c9" font-size="10">(Orchestration)</text>
+
+                <rect x="530" y="220" width="110" height="80" fill="rgba(124, 58, 237, 0.2)" stroke="#7c3aed" stroke-width="2" rx="8"/>
+                <text x="585" y="260" text-anchor="middle" fill="#7c3aed" font-weight="bold" font-size="11">Lambda</text>
+                <text x="585" y="278" text-anchor="middle" fill="#a0a9c9" font-size="10">(Serverless)</text>
+
+                <!-- Arrow down from ECR to deployments -->
+                <path d="M 430 250 L 430 280 L 585 280" stroke="#FF9900" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+                <!-- Arrow right to monitoring -->
+                <path d="M 640 140 L 720 140" stroke="#FF9900" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                <path d="M 640 260 L 720 260" stroke="#FF9900" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+                <!-- CloudWatch -->
+                <rect x="720" y="80" width="120" height="160" fill="rgba(255, 153, 0, 0.2)" stroke="#FF9900" stroke-width="2" rx="8"/>
+                <text x="780" y="145" text-anchor="middle" fill="#FF9900" font-weight="bold" font-size="12">CloudWatch</text>
+                <text x="780" y="165" text-anchor="middle" fill="#a0a9c9" font-size="11">(Monitoring &</text>
+                <text x="780" y="180" text-anchor="middle" fill="#a0a9c9" font-size="11">Logging)</text>
+
+                <!-- Arrow marker definition -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#FF9900"/>
+                    </marker>
+                </defs>
+            </svg>
+        </div>
+    </section>
+
+    <!-- SERVICES SECTION -->
+    <section class="services-section" id="services">
+        <!-- COMPUTE SERVICES -->
+        <div class="category">
+            <h2 class="category-title">🖥️ Compute Services</h2>
+            <div class="tiles-grid">
+                <!-- EC2 -->
+                <div class="service-tile">
+                    <div class="tile-icon">💻</div>
+                    <div class="tile-name">EC2 (Elastic Compute Cloud)</div>
+                    <div class="tile-subtitle">Virtual Machines</div>
+                    <div class="tile-description">
+                        Resizable virtual servers for running applications. Complete control over OS, middleware, and application stack.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Traditional applications requiring full OS control, long-running services, high CPU/memory needs, legacy software
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">IaaS</span>
+                        <span class="tag">High Control</span>
+                        <span class="tag">Pay-as-you-go</span>
+                    </div>
+                </div>
+
+                <!-- Auto Scaling Group -->
+                <div class="service-tile">
+                    <div class="tile-icon">📈</div>
+                    <div class="tile-name">Auto Scaling Group (ASG)</div>
+                    <div class="tile-subtitle">Dynamic Scaling</div>
+                    <div class="tile-description">
+                        Automatically scales EC2 instances up or down based on demand, CPU metrics, custom metrics, or schedule.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Variable traffic patterns, handling traffic spikes, cost optimization, zero-downtime deployments
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Scalability</span>
+                        <span class="tag">Cost Optimization</span>
+                    </div>
+                </div>
+
+                <!-- Elastic Beanstalk -->
+                <div class="service-tile">
+                    <div class="tile-icon">🔧</div>
+                    <div class="tile-name">Elastic Beanstalk</div>
+                    <div class="tile-subtitle">Managed Platform</div>
+                    <div class="tile-description">
+                        Platform-as-a-Service solution that handles deployment, scaling, and operations. Upload code and let AWS manage it.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Web applications, microservices, quick deployments, teams wanting PaaS simplicity without Lambda constraints
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">PaaS</span>
+                        <span class="tag">Quick Deploy</span>
+                        <span class="tag">Multi-lang</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTAINER & ORCHESTRATION -->
+        <div class="category">
+            <h2 class="category-title">🐳 Container & Orchestration</h2>
+            <div class="tiles-grid">
+                <!-- ECS -->
+                <div class="service-tile">
+                    <div class="tile-icon">⚙️</div>
+                    <div class="tile-name">ECS (Elastic Container Service)</div>
+                    <div class="tile-subtitle">Docker Container Orchestration</div>
+                    <div class="tile-description">
+                        AWS-native container orchestration. Simplified container management on EC2 or Fargate with full AWS integration.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Docker applications, AWS-first organizations, simpler than Kubernetes, tight AWS service integration
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Containers</span>
+                        <span class="tag">AWS Native</span>
+                        <span class="tag">Orchestration</span>
+                    </div>
+                </div>
+
+                <!-- Fargate -->
+                <div class="service-tile">
+                    <div class="tile-icon">☁️</div>
+                    <div class="tile-name">Fargate</div>
+                    <div class="tile-subtitle">Serverless Containers</div>
+                    <div class="tile-description">
+                        Serverless compute for containers. Run Docker containers without managing underlying EC2 servers.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Containerized apps wanting "serverless" benefits, avoiding infrastructure management, variable workloads
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Serverless</span>
+                        <span class="tag">Containers</span>
+                        <span class="tag">No Ops</span>
+                    </div>
+                </div>
+
+                <!-- EKS -->
+                <div class="service-tile">
+                    <div class="tile-icon">☸️</div>
+                    <div class="tile-name">EKS (Elastic Kubernetes Service)</div>
+                    <div class="tile-subtitle">Kubernetes on AWS</div>
+                    <div class="tile-description">
+                        Managed Kubernetes service. Full Kubernetes power with AWS management for control plane and integrations.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Kubernetes expertise exists, multi-cloud strategy, complex microservices, standard Kubernetes tooling needed
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Kubernetes</span>
+                        <span class="tag">Complex Apps</span>
+                        <span class="tag">Multi-cloud</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SERVERLESS COMPUTE -->
+        <div class="category">
+            <h2 class="category-title">⚡ Serverless Compute</h2>
+            <div class="tiles-grid">
+                <!-- Lambda -->
+                <div class="service-tile">
+                    <div class="tile-icon">λ</div>
+                    <div class="tile-name">Lambda</div>
+                    <div class="tile-subtitle">Serverless Functions</div>
+                    <div class="tile-description">
+                        Event-driven serverless functions. Pay only for execution time, automatic scaling, no infrastructure management.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Event-driven workloads, microservices, APIs, data processing, scheduled tasks, bursty traffic patterns
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Serverless</span>
+                        <span class="tag">Event-driven</span>
+                        <span class="tag">Cost-effective</span>
+                    </div>
+                </div>
+
+                <!-- API Gateway -->
+                <div class="service-tile">
+                    <div class="tile-icon">🔌</div>
+                    <div class="tile-name">API Gateway</div>
+                    <div class="tile-subtitle">API Management & Creation</div>
+                    <div class="tile-description">
+                        Create, publish, maintain REST/WebSocket APIs. Integrates with Lambda, EC2, and other services with throttling and authentication.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            REST APIs, microservices interfaces, mobile backends, serverless API patterns, API versioning and management
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">API</span>
+                        <span class="tag">Integration</span>
+                        <span class="tag">Management</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STORAGE SERVICES -->
+        <div class="category">
+            <h2 class="category-title">💾 Storage Services</h2>
+            <div class="tiles-grid">
+                <!-- S3 -->
+                <div class="service-tile">
+                    <div class="tile-icon">📦</div>
+                    <div class="tile-name">S3 (Simple Storage Service)</div>
+                    <div class="tile-subtitle">Object Storage</div>
+                    <div class="tile-description">
+                        Unlimited object storage in the cloud. Perfect for backups, static websites, media files, logs, and data lakes.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Static files, backups, archives, media distribution, big data processing, application logs, data lakes
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Object Storage</span>
+                        <span class="tag">Scalable</span>
+                        <span class="tag">Durable</span>
+                    </div>
+                </div>
+
+                <!-- EBS -->
+                <div class="service-tile">
+                    <div class="tile-icon">💿</div>
+                    <div class="tile-name">EBS (Elastic Block Store)</div>
+                    <div class="tile-subtitle">Block Storage for EC2</div>
+                    <div class="tile-description">
+                        High-performance block storage volumes for EC2 instances. Supports snapshots and multiple volume types for different performance needs.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            EC2 instance storage, databases on EC2, transactional workloads, high IOPS requirements, persistent storage
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Block Storage</span>
+                        <span class="tag">EC2 Attached</span>
+                        <span class="tag">High Performance</span>
+                    </div>
+                </div>
+
+                <!-- EFS -->
+                <div class="service-tile">
+                    <div class="tile-icon">🗂️</div>
+                    <div class="tile-name">EFS (Elastic File System)</div>
+                    <div class="tile-subtitle">Shared Network File System</div>
+                    <div class="tile-description">
+                        Managed NFS file system accessible from multiple EC2 instances simultaneously. Auto-scales with usage.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Shared file access, big data processing, content management, machine learning training, multi-instance workloads
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">File Storage</span>
+                        <span class="tag">Shared Access</span>
+                        <span class="tag">Scalable</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATABASE SERVICES -->
+        <div class="category">
+            <h2 class="category-title">🗄️ Database Services</h2>
+            <div class="tiles-grid">
+                <!-- RDS -->
+                <div class="service-tile">
+                    <div class="tile-icon">📊</div>
+                    <div class="tile-name">RDS (Relational Database Service)</div>
+                    <div class="tile-subtitle">Managed SQL Databases</div>
+                    <div class="tile-description">
+                        Managed relational databases. Supports MySQL, PostgreSQL, MariaDB, Oracle, SQL Server with automatic backups and failover.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Traditional SQL applications, relational data, multi-row transactions, ACID compliance needed, legacy apps
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">SQL</span>
+                        <span class="tag">Managed</span>
+                        <span class="tag">HA/DR</span>
+                    </div>
+                </div>
+
+                <!-- Aurora -->
+                <div class="service-tile">
+                    <div class="tile-icon">✨</div>
+                    <div class="tile-name">Aurora</div>
+                    <div class="tile-subtitle">High-Performance SQL</div>
+                    <div class="tile-description">
+                        AWS-optimized relational database compatible with MySQL/PostgreSQL. Higher performance at lower cost with advanced features.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            High-traffic applications, mission-critical databases, needing superior performance, auto-scaling read replicas
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">High Performance</span>
+                        <span class="tag">Auto-scaling</span>
+                        <span class="tag">Distributed</span>
+                    </div>
+                </div>
+
+                <!-- DynamoDB -->
+                <div class="service-tile">
+                    <div class="tile-icon">⚡</div>
+                    <div class="tile-name">DynamoDB</div>
+                    <div class="tile-subtitle">NoSQL Database</div>
+                    <div class="tile-description">
+                        Fully managed NoSQL database. Single-digit millisecond latency, seamless scaling, on-demand or provisioned capacity.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Real-time applications, mobile backends, IoT data, user sessions, leaderboards, flexible schema needs
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">NoSQL</span>
+                        <span class="tag">Low Latency</span>
+                        <span class="tag">Serverless</span>
+                    </div>
+                </div>
+
+                <!-- RDS Proxy -->
+                <div class="service-tile">
+                    <div class="tile-icon">🔗</div>
+                    <div class="tile-name">RDS Proxy</div>
+                    <div class="tile-subtitle">Database Connection Pooling</div>
+                    <div class="tile-description">
+                        Managed database connection proxy. Reduces database load, improves resilience, enables connection pooling.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Lambda/serverless heavy workloads, connection pool exhaustion issues, improving application resilience
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Connection Pool</span>
+                        <span class="tag">Resilience</span>
+                        <span class="tag">Serverless</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NETWORKING & LOAD BALANCING -->
+        <div class="category">
+            <h2 class="category-title">🌐 Networking & Load Balancing</h2>
+            <div class="tiles-grid">
+                <!-- ALB -->
+                <div class="service-tile">
+                    <div class="tile-icon">⚖️</div>
+                    <div class="tile-name">ALB (Application Load Balancer)</div>
+                    <div class="tile-subtitle">Layer 7 Load Balancing</div>
+                    <div class="tile-description">
+                        Application-aware load balancer. Routes based on hostnames, paths, protocols. Perfect for microservices architectures.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Microservices, containerized apps, path-based routing, hostname-based routing, WebSocket support needed
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Load Balancer</span>
+                        <span class="tag">Layer 7</span>
+                        <span class="tag">Microservices</span>
+                    </div>
+                </div>
+
+                <!-- NLB -->
+                <div class="service-tile">
+                    <div class="tile-icon">⚡</div>
+                    <div class="tile-name">NLB (Network Load Balancer)</div>
+                    <div class="tile-subtitle">Layer 4 Ultra-High Performance</div>
+                    <div class="tile-description">
+                        Ultra-high performance network load balancer. Handles millions of requests per second with extreme low latency.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Extreme throughput, gaming, real-time communications, extreme latency sensitivity, non-HTTP protocols
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Load Balancer</span>
+                        <span class="tag">Layer 4</span>
+                        <span class="tag">Ultra-Performance</span>
+                    </div>
+                </div>
+
+                <!-- VPC & Regions -->
+                <div class="service-tile">
+                    <div class="tile-icon">🗺️</div>
+                    <div class="tile-name">VPC, Regions & Availability Zones</div>
+                    <div class="tile-subtitle">Network & Global Infrastructure</div>
+                    <div class="tile-description">
+                        VPC provides isolated network environments. Regions are geographic areas, Availability Zones are isolated data centers within regions.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Multi-AZ deployment for HA, multi-region for DR, compliance in specific regions, latency optimization globally
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Networking</span>
+                        <span class="tag">High Availability</span>
+                        <span class="tag">Disaster Recovery</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MONITORING & LOGGING -->
+        <div class="category">
+            <h2 class="category-title">📊 Monitoring & Logging</h2>
+            <div class="tiles-grid">
+                <!-- CloudWatch -->
+                <div class="service-tile">
+                    <div class="tile-icon">📈</div>
+                    <div class="tile-name">CloudWatch</div>
+                    <div class="tile-subtitle">Monitoring & Logging</div>
+                    <div class="tile-description">
+                        Comprehensive monitoring service. Collects logs, metrics, and enables alarms. Central visibility into application and infrastructure.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Centralized logging, application/infrastructure metrics, alerting, dashboards, troubleshooting, performance analysis
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Monitoring</span>
+                        <span class="tag">Logging</span>
+                        <span class="tag">Alerting</span>
+                    </div>
+                </div>
+
+                <!-- X-Ray -->
+                <div class="service-tile">
+                    <div class="tile-icon">🔍</div>
+                    <div class="tile-name">X-Ray</div>
+                    <div class="tile-subtitle">Distributed Tracing</div>
+                    <div class="tile-description">
+                        Analyze and debug distributed applications. Maps service interactions, identifies performance bottlenecks and errors.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Microservices debugging, request tracing, performance bottleneck identification, understanding service dependencies
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Tracing</span>
+                        <span class="tag">Debugging</span>
+                        <span class="tag">Microservices</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEPLOYMENT & CI/CD -->
+        <div class="category">
+            <h2 class="category-title">🚀 Deployment & CI/CD</h2>
+            <div class="tiles-grid">
+                <!-- CodePipeline -->
+                <div class="service-tile">
+                    <div class="tile-icon">🔄</div>
+                    <div class="tile-name">CodePipeline</div>
+                    <div class="tile-subtitle">CI/CD Orchestration</div>
+                    <div class="tile-description">
+                        Automates release pipeline. Orchestrates build, test, and deploy stages. Integrates with CodeCommit, CodeBuild, CodeDeploy.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Continuous integration/deployment, automated testing, multi-stage deployments, infrastructure automation
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">CI/CD</span>
+                        <span class="tag">Automation</span>
+                        <span class="tag">Pipeline</span>
+                    </div>
+                </div>
+
+                <!-- CodeBuild -->
+                <div class="service-tile">
+                    <div class="tile-icon">🔨</div>
+                    <div class="tile-name">CodeBuild</div>
+                    <div class="tile-subtitle">Fully Managed Build Service</div>
+                    <div class="tile-description">
+                        Compiles source code, runs tests, produces deployable artifacts. Supports multiple languages and platforms.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Building Docker images, compiling code, running unit/integration tests, creating deployment artifacts
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Build</span>
+                        <span class="tag">Testing</span>
+                        <span class="tag">Artifacts</span>
+                    </div>
+                </div>
+
+                <!-- CodeDeploy -->
+                <div class="service-tile">
+                    <div class="tile-icon">📦</div>
+                    <div class="tile-name">CodeDeploy</div>
+                    <div class="tile-subtitle">Application Deployment</div>
+                    <div class="tile-description">
+                        Automates application deployments to on-premise servers, EC2 instances, or Lambda. Supports rolling deployments and traffic control.
+                    </div>
+                    <div class="tile-usecase">
+                        <div class="usecase-title">✓ Best For</div>
+                        <div class="usecase-text">
+                            Rolling deployments, blue-green deployments, canary deployments, on-premise and EC2 deployments
+                        </div>
+                    </div>
+                    <div class="tile-tags">
+                        <span class="tag">Deployment</span>
+                        <span class="tag">Automation</span>
+                        <span class="tag">Rolling Updates</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPARISON TABLE -->
+    <section class="comparison-section" id="comparison">
+        <h2 class="section-title">Service Comparison Matrix</h2>
+        
+        <div class="comparison-table">
+            <div class="table-header">
+                <div>Service</div>
+                <div>Management</div>
+                <div>Scalability</div>
+                <div>Cost Model</div>
+            </div>
+
+            <div class="table-row">
+                <div class="table-cell table-service">EC2</div>
+                <div class="table-cell"><span class="badge low">Manual</span></div>
+                <div class="table-cell"><span class="badge high">ASG</span></div>
+                <div class="table-cell"><span class="badge medium">Hourly/On-demand</span></div>
+            </div>
+
+            <div class="table-row">
+                <div class="table-cell table-service">Elastic Beanstalk</div>
+                <div class="table-cell"><span class="badge medium">Managed</span></div>
+                <div class="table-cell"><span class="badge high">Automatic</span></div>
+                <div class="table-cell"><span class="badge medium">EC2 pricing</span></div>
+            </div>
+
+            <div class="table-row">
+                <div class="table-cell table-service">ECS</div>
+                <div class="table-cell"><span class="badge medium">Managed</span></div>
+                <div class="table-cell"><span class="badge high">Automatic</span></div>
+                <div class="table-cell"><span class="badge medium">EC2/Fargate</span></div>
+            </div>
+
+            <div class="table-row">
+                <div class="table-cell table-service">EKS</div>
+                <div class="table-cell"><span class="badge medium">Managed K8s</span></div>
+                <div class="table-cell"><span class="badge high">Automatic</span></div>
+                <div class="table-cell"><span class="badge medium">EC2/Fargate</span></div>
+            </div>
+
+            <div class="table-row">
+                <div class="table-cell table-service">Lambda</div>
+                <div class="table-cell"><span class="badge high">Fully Managed</span></div>
+                <div class="table-cell"><span class="badge high">Automatic</span></div>
+                <div class="table-cell"><span class="badge high">Per execution</span></div>
+            </div>
+
+            <div class="table-row">
+                <div class="table-cell table-service">Fargate</div>
+                <div class="table-cell"><span class="badge high">Fully Managed</span></div>
+                <div class="table-cell"><span class="badge high">Automatic</span></div>
+                <div class="table-cell"><span class="badge high">Per task</span></div>
+            </div>
+
+            <div class="table-row">
+                <div class="table-cell table-service">RDS</div>
+                <div class="table-cell"><span class="badge high">Fully Managed</span></div>
+                <div class="table-cell"><span class="badge medium">Manual scaling</span></div>
+                <div class="table-cell"><span class="badge medium">Per hour</span></div>
+            </div>
+
+            <div class="table-row">
+                <div class="table-cell table-service">DynamoDB</div>
+                <div class="table-cell"><span class="badge high">Fully Managed</span></div>
+                <div class="table-cell"><span class="badge high">Automatic</span></div>
+                <div class="table-cell"><span class="badge high">Pay-per-request</span></div>
+            </div>
+
+            <div class="table-row">
+                <div class="table-cell table-service">S3</div>
+                <div class="table-cell"><span class="badge high">Fully Managed</span></div>
+                <div class="table-cell"><span class="badge high">Unlimited</span></div>
+                <div class="table-cell"><span class="badge high">Storage + Transfer</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DECISION GUIDE -->
+    <section class="decision-section" id="decision">
+        <h2 class="section-title">🎯 Decision Guide by Use Case</h2>
+
+        <div class="decision-box">
+            <h3>📱 Building a Modern Web Application</h3>
+            <p><strong>Recommended Architecture:</strong> ALB → ECS/Fargate + RDS Aurora → CloudWatch</p>
+            <ul>
+                <li><strong>Frontend:</strong> S3 + CloudFront for static assets</li>
+                <li><strong>Backend:</strong> ECS on Fargate for containerized API servers</li>
+                <li><strong>Database:</strong> Aurora for relational data with auto-scaling read replicas</li>
+                <li><strong>Load Balancing:</strong> ALB for path/hostname-based routing</li>
+                <li><strong>Monitoring:</strong> CloudWatch for logs and metrics</li>
+            </ul>
+        </div>
+
+        <div class="decision-box">
+            <h3>⚡ Building Serverless Microservices</h3>
+            <p><strong>Recommended Architecture:</strong> API Gateway → Lambda → DynamoDB → CloudWatch</p>
+            <ul>
+                <li><strong>APIs:</strong> API Gateway exposes HTTP endpoints</li>
+                <li><strong>Compute:</strong> Lambda functions for business logic</li>
+                <li><strong>Data:</strong> DynamoDB for fast, scalable NoSQL storage</li>
+                <li><strong>Async Processing:</strong> SQS/SNS for event-driven patterns</li>
+                <li><strong>Cost:</strong> Pay only for actual execution, no idle infrastructure</li>
+            </ul>
+        </div>
+
+        <div class="decision-box">
+            <h3>📊 Running Enterprise Legacy Application</h3>
+            <p><strong>Recommended Architecture:</strong> EC2 + RDS + ASG + ALB</p>
+            <ul>
+                <li><strong>Compute:</strong> EC2 instances for application servers</li>
+                <li><strong>Database:</strong> RDS for SQL database with managed backups</li>
+                <li><strong>Scaling:</strong> Auto Scaling Group for horizontal scaling</li>
+                <li><strong>Load Balancing:</strong> ALB to distribute traffic</li>
+                <li><strong>Networking:</strong> Multi-AZ deployment for high availability</li>
+            </ul>
+        </div>
+
+        <div class="decision-box">
+            <h3>🐳 Kubernetes-First Organization</h3>
+            <p><strong>Recommended Architecture:</strong> EKS (Kubernetes) + ECR + RDS Aurora</p>
+            <ul>
+                <li><strong>Orchestration:</strong> EKS for managed Kubernetes cluster</li>
+                <li><strong>Container Images:</strong> ECR to store Docker images</li>
+                <li><strong>Multi-region:</strong> Deploy EKS clusters across regions</li>
+                <li><strong>Database:</strong> Aurora with cross-region replicas</li>
+                <li><strong>Networking:</strong> VPC with custom networking for pod communication</li>
+            </ul>
+        </div>
+
+        <div class="decision-box">
+            <h3>📈 High-Traffic Real-Time Application</h3>
+            <p><strong>Recommended Architecture:</strong> NLB → EC2 (ASG) + ElastiCache + DynamoDB</p>
+            <ul>
+                <li><strong>Load Balancing:</strong> NLB for ultra-low latency</li>
+                <li><strong>Compute:</strong> EC2 instances with Auto Scaling</li>
+                <li><strong>Caching:</strong> ElastiCache (Redis/Memcached) for sub-millisecond response times</li>
+                <li><strong>Database:</strong> DynamoDB for single-digit millisecond latency</li>
+                <li><strong>Monitoring:</strong> CloudWatch + X-Ray for performance tracking</li>
+            </ul>
+        </div>
+
+        <div class="decision-box">
+            <h3>🌍 Global Content Distribution</h3>
+            <p><strong>Recommended Architecture:</strong> S3 + CloudFront + Route 53</p>
+            <ul>
+                <li><strong>Storage:</strong> S3 for global object storage</li>
+                <li><strong>CDN:</strong> CloudFront for global edge distribution</li>
+                <li><strong>DNS:</strong> Route 53 for geographic routing</li>
+                <li><strong>Origin Shield:</strong> Extra caching layer for protection</li>
+                <li><strong>Cost:</strong> Extremely cost-effective for static content</li>
+            </ul>
+        </div>
+
+        <div class="decision-box">
+            <h3>🤖 Machine Learning & Data Processing</h3>
+            <p><strong>Recommended Architecture:</strong> Lambda/Batch → S3 → RDS/DynamoDB</p>
+            <ul>
+                <li><strong>Compute:</strong> Lambda for small jobs, Batch for large-scale processing</li>
+                <li><strong>Storage:</strong> S3 for data lake and model storage</li>
+                <li><strong>Database:</strong> RDS/DynamoDB for training data and results</li>
+                <li><strong>Training:</strong> SageMaker for ML model training and deployment</li>
+                <li><strong>Scalability:</strong> Automatic scaling without managing infrastructure</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <p><strong>AWS Cloud Deployment Guide</strong></p>
+            <p>A comprehensive reference for deploying applications on AWS cloud infrastructure</p>
+            <p style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.7;">
+                Last updated: 2024 | Created for cloud architects, DevOps engineers, and solutions developers
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.6s ease-out forwards';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Observe all tiles and boxes
+        document.querySelectorAll('.service-tile, .decision-box').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            observer.observe(el);
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
