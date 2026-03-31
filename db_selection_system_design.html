@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Selection — System Design Interview Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e29;
+    --border: #252a38;
+    --accent: #f5a623;
+    --accent2: #3ecfb2;
+    --accent3: #e05c6a;
+    --accent4: #7c6af5;
+    --text: #e8eaf0;
+    --muted: #7a8099;
+    --code-bg: #0a0c12;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 0 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(124,106,245,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 30%, rgba(245,166,35,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent2);
+    background: rgba(62,207,178,0.1);
+    border: 1px solid rgba(62,207,178,0.25);
+    padding: 4px 12px;
+    border-radius: 2px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 4.5vw, 48px);
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-inner {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-inner a {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 14px 16px;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .nav-inner a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* MAIN */
+  main {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 56px 32px 96px;
+  }
+
+  /* SECTIONS */
+  section {
+    margin-bottom: 72px;
+    scroll-margin-top: 60px;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(20px, 2.8vw, 28px);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 28px 0 12px;
+  }
+
+  h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 20px 0 8px;
+  }
+
+  p { margin-bottom: 14px; color: #c8cad8; }
+
+  strong { color: var(--text); font-weight: 600; }
+  em { color: var(--accent); font-style: italic; }
+
+  /* FRAMEWORK BOX */
+  .framework {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 28px 32px;
+    margin: 24px 0;
+  }
+  .framework h4 { margin-top: 0; }
+
+  /* DECISION TABLE */
+  .decision-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .decision-table th {
+    background: var(--surface2);
+    color: var(--accent2);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 12px 16px;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+  .decision-table td {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    color: #c8cad8;
+    font-family: 'Lora', serif;
+    font-size: 14px;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .decision-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .decision-table tr:hover td { background: rgba(245,166,35,0.04); }
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-weight: 500;
+    margin: 1px;
+  }
+  .tag-sql { background: rgba(124,106,245,0.2); color: #a99cf8; border: 1px solid rgba(124,106,245,0.3); }
+  .tag-nosql { background: rgba(62,207,178,0.2); color: #6ed8c5; border: 1px solid rgba(62,207,178,0.3); }
+  .tag-cache { background: rgba(245,166,35,0.2); color: #f5bc5c; border: 1px solid rgba(245,166,35,0.3); }
+  .tag-search { background: rgba(224,92,106,0.2); color: #e98a95; border: 1px solid rgba(224,92,106,0.3); }
+  .tag-graph { background: rgba(100,180,255,0.2); color: #90ccff; border: 1px solid rgba(100,180,255,0.3); }
+  .tag-tsdb { background: rgba(255,140,60,0.2); color: #ffaa70; border: 1px solid rgba(255,140,60,0.3); }
+
+  /* Q&A CARDS */
+  .qa-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 28px 0;
+    overflow: hidden;
+  }
+  .qa-question {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .qa-q-icon {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent3);
+    background: rgba(224,92,106,0.15);
+    border: 1px solid rgba(224,92,106,0.3);
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .qa-question p {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+  }
+  .qa-answer {
+    padding: 20px 24px;
+  }
+  .qa-answer p { font-size: 15px; }
+  .qa-a-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+
+  /* TRAP BOX */
+  .trap-box {
+    background: rgba(224,92,106,0.06);
+    border: 1px solid rgba(224,92,106,0.25);
+    border-left: 3px solid var(--accent3);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .trap-box .trap-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .trap-box p { color: #e0a0a6; margin: 0; font-size: 14px; }
+
+  /* INSIGHT BOX */
+  .insight-box {
+    background: rgba(62,207,178,0.05);
+    border: 1px solid rgba(62,207,178,0.2);
+    border-left: 3px solid var(--accent2);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .insight-box .insight-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .insight-box p { color: #9de8d8; margin: 0; font-size: 14px; }
+
+  /* CODE */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #c8d0e8;
+    overflow-x: auto;
+    line-height: 1.7;
+  }
+  .code-block .cm { color: #5a6080; }
+  .code-block .kw { color: var(--accent2); }
+  .code-block .str { color: #f5c06a; }
+  .code-block .num { color: #a99cf8; }
+  .code-block .fn { color: var(--accent); }
+
+  /* SCENARIO CARD */
+  .scenario {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 32px 0;
+  }
+  .scenario-header {
+    background: linear-gradient(135deg, rgba(124,106,245,0.15), rgba(62,207,178,0.08));
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+  }
+  .scenario-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .scenario-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .scenario-body { padding: 24px; }
+  .scenario-body p { font-size: 15px; }
+
+  .decision-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 20px 0;
+    align-items: stretch;
+  }
+  .flow-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 140px;
+    position: relative;
+  }
+  .flow-step + .flow-step { margin-left: -1px; border-left: none; }
+  .flow-step:first-child { border-radius: 4px 0 0 4px; }
+  .flow-step:last-child { border-radius: 0 4px 4px 0; }
+  .flow-step .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .flow-step .step-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  /* DB CHIP GRID */
+  .db-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .db-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .db-card:hover { border-color: var(--accent); }
+  .db-card-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .db-card-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .db-card p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* CHECKLIST */
+  .checklist {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .checklist li {
+    padding: 8px 0 8px 28px;
+    position: relative;
+    font-size: 15px;
+    color: #c8cad8;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .checklist li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  /* ANSWER STRUCTURE */
+  .answer-structure {
+    counter-reset: step;
+    list-style: none;
+    margin: 16px 0;
+  }
+  .answer-structure li {
+    counter-increment: step;
+    padding: 14px 0 14px 52px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    color: #c8cad8;
+  }
+  .answer-structure li:last-child { border-bottom: none; }
+  .answer-structure li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.2);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    top: 12px;
+  }
+
+  /* SENIOR QUOTE */
+  .senior-say {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent4);
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-style: italic;
+    color: #b0b4d0;
+    font-size: 15px;
+    border-radius: 0 4px 4px 0;
+  }
+  .senior-say::before {
+    content: '💬 Senior Engineer: ';
+    font-style: normal;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent4);
+    display: block;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 640px) {
+    main { padding: 32px 16px 64px; }
+    .header-inner { padding: 0 16px; }
+    .nav-inner { padding: 0 16px; }
+    .decision-flow { flex-direction: column; }
+    .flow-step + .flow-step { margin-left: 0; border-left: 1px solid var(--border); border-top: none; }
+    .flow-step:first-child { border-radius: 4px 4px 0 0; }
+    .flow-step:last-child { border-radius: 0 0 4px 4px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="badge">System Design Interview Prep</div>
+    <h1>Database Selection:<br><span>The Definitive Field Guide</span></h1>
+    <p class="subtitle">// For juniors aiming at product companies — written by a senior who's been there</p>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#mindset">Mindset</a>
+    <a href="#framework">Framework</a>
+    <a href="#types">DB Types</a>
+    <a href="#signals">Signals</a>
+    <a href="#qa">Q&A</a>
+    <a href="#scenarios">Scenarios</a>
+    <a href="#traps">Traps</a>
+    <a href="#phrases">Phrases</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- SECTION 0: MINDSET -->
+  <section id="mindset">
+    <div class="section-label">// 00 — Before We Start</div>
+    <h2>The Mindset Shift: Why Juniors Fail This</h2>
+
+    <p>Let me be blunt with you. Most juniors fail the database selection question not because they don't know databases — they do. They fail because they treat it like a <em>trivia quiz</em> instead of an <em>engineering discussion</em>.</p>
+
+    <p>An interviewer at a company like Swiggy, Razorpay, Atlassian, or Flipkart isn't asking "which database is the best?" They're asking: <strong>"Can you reason through trade-offs like an engineer who ships real systems?"</strong></p>
+
+    <div class="senior-say">
+      When I ask a junior "which DB would you pick for this feature?", I'm not looking for the right answer. I'm looking at whether you ask the right questions back. A 2-year engineer who says "it depends — can you tell me more about the read/write ratio and consistency needs?" already beats 70% of candidates.
+    </div>
+
+    <div class="framework">
+      <h4>The Three Things Interviewers Actually Grade</h4>
+      <ul class="checklist">
+        <li><strong>Trade-off awareness</strong> — You know what you're giving up when you pick something</li>
+        <li><strong>Scale intuition</strong> — Your choice makes sense at 1K, 1M, and 100M users</li>
+        <li><strong>Justification depth</strong> — You can say <em>why</em>, not just <em>what</em></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION 1: FRAMEWORK -->
+  <section id="framework">
+    <div class="section-label">// 01 — The Core Framework</div>
+    <h2>How to Think About Database Selection</h2>
+
+    <p>Before you name a single database, you need to ask yourself — or the interviewer — these questions. This is your decision tree. Never skip it.</p>
+
+    <h3>The 7-Question Framework</h3>
+
+    <ol class="answer-structure">
+      <li><strong>What is the data shape?</strong> — Is it tabular with fixed columns? Hierarchical JSON? Graph-like relationships? Time-stamped events? This alone eliminates 80% of wrong choices.</li>
+      <li><strong>What are the read vs write patterns?</strong> — Heavy reads (10:1)? Heavy writes (event streams)? Balanced? The answer changes everything. A write-heavy system and a read-heavy system solving the "same" problem need completely different databases.</li>
+      <li><strong>What is the consistency requirement?</strong> — Does every node need to see the same data immediately (strong consistency)? Or is eventual consistency acceptable? This is the CAP theorem entering the room.</li>
+      <li><strong>What are the latency expectations?</strong> — Sub-millisecond? Under 50ms? A few seconds is fine? If your interviewer says "user-facing real-time", think cache layers. If they say "batch reporting", think columnar.</li>
+      <li><strong>What scale are we designing for?</strong> — Start small, but explicitly say what the growth path looks like. 10K users today, 10M in 18 months changes which DB is viable.</li>
+      <li><strong>Are there complex queries or relationships?</strong> — Ad-hoc joins, aggregations, full-text search? Or are queries simple key-lookups? Complex queries love SQL. Simple lookups love NoSQL.</li>
+      <li><strong>What is the durability and compliance requirement?</strong> — Financial data? Medical records? These require ACID, write-ahead logs, and audit trails. A social media like/unlike does not.</li>
+    </ol>
+
+    <div class="insight-box">
+      <div class="insight-label">Pro Tip</div>
+      <p>State these questions out loud in the interview. Don't just think them. It shows structured thinking and gives the interviewer a chance to steer you. Silence while you think looks like you're lost. Thinking aloud looks senior.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 2: DB TYPES -->
+  <section id="types">
+    <div class="section-label">// 02 — Database Taxonomy</div>
+    <h2>The Database Landscape (What Actually Matters)</h2>
+
+    <p>Don't memorize a list. Understand the <em>category</em> first, then pick the specific tool. Here's the real breakdown:</p>
+
+    <h3>1. Relational Databases (RDBMS)</h3>
+    <p><strong>When to use:</strong> Your data has clear relationships, you need ACID transactions, your schema is relatively stable, and you need complex queries. Think: anything where money or inventory changes hands.</p>
+    <div class="db-grid">
+      <div class="db-card">
+        <div class="db-card-name">PostgreSQL</div>
+        <div class="db-card-type">Relational / RDBMS</div>
+        <p>The workhorse. Supports JSONB for semi-structured data, full-text search, GIS (PostGIS). Use this as your first pick unless you have a very specific reason not to.</p>
+      </div>
+      <div class="db-card">
+        <div class="db-card-name">MySQL / Aurora</div>
+        <div class="db-card-type">Relational / RDBMS</div>
+        <p>Instagram ran on MySQL for years. Excellent read replicas. Aurora adds cloud-native scaling. Good default for web apps.</p>
+      </div>
+    </div>
+
+    <div class="trap-box">
+      <div class="trap-label">❌ Common Junior Mistake</div>
+      <p>Saying "NoSQL is better than SQL" or vice versa. They solve different problems. A 10x engineer at Stripe is still using PostgreSQL for payments in 2024. Don't fall for tech hype.</p>
+    </div>
+
+    <h3>2. Document Databases (NoSQL)</h3>
+    <p><strong>When to use:</strong> Your data is naturally hierarchical (nested objects), schema changes frequently, you need horizontal scale from day one, and your queries are mostly by a single key or a few fields.</p>
+    <div class="db-grid">
+      <div class="db-card">
+        <div class="db-card-name">MongoDB</div>
+        <div class="db-card-type">Document Store</div>
+        <p>Stores JSON-like documents. Great for product catalogs, user profiles, CMS data. Built-in sharding. Watch out for document size limits and lack of multi-document ACID (though it's improved).</p>
+      </div>
+      <div class="db-card">
+        <div class="db-card-name">DynamoDB</div>
+        <div class="db-card-type">Document + Key-Value (AWS)</div>
+        <p>Serverless, near-infinite scale at the cost of extreme query rigidity. You must know your access patterns at design time. Used at Amazon for millions of req/sec. Hard to query flexibly later.</p>
+      </div>
+    </div>
+
+    <h3>3. Key-Value Stores (Cache + Speed Layer)</h3>
+    <p><strong>When to use:</strong> Sub-millisecond access, session storage, rate limiting counters, leaderboards, pub/sub messaging. Always used as a layer <em>in front of</em> another database, not instead of it.</p>
+    <div class="db-grid">
+      <div class="db-card">
+        <div class="db-card-name">Redis</div>
+        <div class="db-card-type">In-Memory Key-Value</div>
+        <p>Not just a cache. It has sorted sets (leaderboards), pub/sub, streams, distributed locks. Incredibly versatile. Data lives in RAM — fast but size-limited and expensive.</p>
+      </div>
+      <div class="db-card">
+        <div class="db-card-name">Memcached</div>
+        <div class="db-card-type">In-Memory Cache</div>
+        <p>Simpler than Redis. Just a cache. Use when you need pure caching and multi-threaded is important. Redis has mostly replaced Memcached for new systems.</p>
+      </div>
+    </div>
+
+    <h3>4. Wide-Column Stores</h3>
+    <p><strong>When to use:</strong> Massive write throughput at scale, time-ordered data, IoT sensor data, audit logs, activity feeds where you write a lot and read in a predictable pattern by key.</p>
+    <div class="db-grid">
+      <div class="db-card">
+        <div class="db-card-name">Apache Cassandra</div>
+        <div class="db-card-type">Wide-Column Store</div>
+        <p>Netflix, Apple, Discord use this. Linear horizontal scale, no single point of failure, tunable consistency. Trade-off: NO joins, NO ACID transactions, query patterns must be defined upfront.</p>
+      </div>
+      <div class="db-card">
+        <div class="db-card-name">HBase</div>
+        <div class="db-card-type">Wide-Column (Hadoop)</div>
+        <p>Lives in the Hadoop ecosystem. Good for batch + real-time on the same data. Less common in cloud-native stacks now.</p>
+      </div>
+    </div>
+
+    <h3>5. Search Engines</h3>
+    <p><strong>When to use:</strong> Full-text search, fuzzy matching, autocomplete, faceted filtering. Do NOT use your main DB for LIKE '%query%' — it's a table scan at scale. Put this in a dedicated search layer.</p>
+    <div class="db-grid">
+      <div class="db-card">
+        <div class="db-card-name">Elasticsearch</div>
+        <div class="db-card-type">Search Engine / Analytics</div>
+        <p>The standard. Inverted index for full-text search. Also used for log analytics (ELK stack). Synced from your primary DB via change data capture or events. Not your source of truth.</p>
+      </div>
+      <div class="db-card">
+        <div class="db-card-name">OpenSearch / Typesense</div>
+        <div class="db-card-type">Search Engine</div>
+        <p>OpenSearch is AWS's Elasticsearch fork. Typesense is simpler and great for product search with typo tolerance.</p>
+      </div>
+    </div>
+
+    <h3>6. Time Series Databases</h3>
+    <p><strong>When to use:</strong> Metrics, monitoring, IoT sensor readings, stock prices — any data where time is the primary dimension and you're doing range queries, aggregations, and downsampling.</p>
+    <div class="db-grid">
+      <div class="db-card">
+        <div class="db-card-name">InfluxDB</div>
+        <div class="db-card-type">Time Series</div>
+        <p>Purpose-built for time-series. Handles high write throughput for metrics. Auto-retention policies to delete old data. Used in infrastructure monitoring.</p>
+      </div>
+      <div class="db-card">
+        <div class="db-card-name">TimescaleDB</div>
+        <div class="db-card-type">Time Series on PostgreSQL</div>
+        <p>PostgreSQL extension. If your team knows SQL well, this is a pragmatic choice. Hypertables partition data by time automatically.</p>
+      </div>
+    </div>
+
+    <h3>7. Graph Databases</h3>
+    <p><strong>When to use:</strong> Data where relationships ARE the data — social networks (friend-of-friend), recommendation engines, fraud detection (connected accounts), knowledge graphs.</p>
+    <div class="db-grid">
+      <div class="db-card">
+        <div class="db-card-name">Neo4j</div>
+        <div class="db-card-type">Graph Database</div>
+        <p>Nodes and edges as first-class citizens. Cypher query language. Terrible for transactional workloads but brilliant for traversals. "Who are the friends of friends within 3 hops?" — SQL would be slow; Neo4j is native.</p>
+      </div>
+    </div>
+
+    <h3>8. Data Warehouses (OLAP)</h3>
+    <p><strong>When to use:</strong> Analytics, reporting, BI dashboards. Optimized for reading large datasets, not for transactional writes. These are NOT your operational databases.</p>
+    <div class="db-grid">
+      <div class="db-card">
+        <div class="db-card-name">Snowflake / BigQuery</div>
+        <div class="db-card-type">Cloud Data Warehouse</div>
+        <p>Columnar storage. A query scanning 1 billion rows takes seconds. Separate compute and storage. Cost can get wild if you're not careful.</p>
+      </div>
+      <div class="db-card">
+        <div class="db-card-name">Amazon Redshift</div>
+        <div class="db-card-type">Cloud Data Warehouse</div>
+        <p>AWS ecosystem. Mature, well-integrated. Good for analytics teams on existing AWS infrastructure.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: SIGNALS -->
+  <section id="signals">
+    <div class="section-label">// 03 — Reading The Signals</div>
+    <h2>Interview Signal → Database Mapping</h2>
+
+    <p>Interviewers drop keywords. Train your brain to hear these and map them instantly to a database category. Here's the cheat sheet:</p>
+
+    <table class="decision-table">
+      <thead>
+        <tr>
+          <th>Signal / Keyword Heard</th>
+          <th>What It Means</th>
+          <th>Database Category</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"payments", "transactions", "inventory", "orders"</td>
+          <td>ACID required. Data integrity is non-negotiable.</td>
+          <td><span class="tag tag-sql">PostgreSQL / MySQL</span></td>
+        </tr>
+        <tr>
+          <td>"user profiles", "product catalog", "flexible schema"</td>
+          <td>Semi-structured data, schema evolves frequently</td>
+          <td><span class="tag tag-nosql">MongoDB / DynamoDB</span></td>
+        </tr>
+        <tr>
+          <td>"session management", "rate limiting", "real-time leaderboard", "pub-sub"</td>
+          <td>Sub-millisecond, in-memory, temporary or fast-access data</td>
+          <td><span class="tag tag-cache">Redis</span></td>
+        </tr>
+        <tr>
+          <td>"search", "autocomplete", "full-text", "fuzzy match"</td>
+          <td>Inverted index, text tokenization, relevance scoring</td>
+          <td><span class="tag tag-search">Elasticsearch</span></td>
+        </tr>
+        <tr>
+          <td>"activity feed", "event log", "write-heavy", "audit trail", "IoT"</td>
+          <td>High write throughput, time-ordered, append-only</td>
+          <td><span class="tag tag-nosql">Cassandra / DynamoDB</span></td>
+        </tr>
+        <tr>
+          <td>"metrics", "monitoring", "dashboards", "sensor data"</td>
+          <td>Time-series data, aggregations over time windows</td>
+          <td><span class="tag tag-tsdb">InfluxDB / TimescaleDB</span></td>
+        </tr>
+        <tr>
+          <td>"social graph", "recommendations", "fraud detection", "relationship traversal"</td>
+          <td>Relationship-heavy queries, graph traversals</td>
+          <td><span class="tag tag-graph">Neo4j</span></td>
+        </tr>
+        <tr>
+          <td>"analytics", "reporting", "BI", "data warehouse", "aggregate millions of rows"</td>
+          <td>OLAP workload, columnar storage, batch reads</td>
+          <td><span class="tag tag-search">Snowflake / BigQuery</span></td>
+        </tr>
+        <tr>
+          <td>"million requests per second", "global scale", "multi-region"</td>
+          <td>Horizontal scaling, multi-region replication, tunable consistency</td>
+          <td><span class="tag tag-nosql">DynamoDB / Cassandra / Spanner</span></td>
+        </tr>
+        <tr>
+          <td>"geolocation", "nearby stores", "distance queries"</td>
+          <td>Geospatial indexing required</td>
+          <td><span class="tag tag-sql">PostgreSQL + PostGIS</span> <span class="tag tag-search">Elasticsearch Geo</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="senior-say">
+      The real world doesn't use just one database. Every mature system I've built uses 3-4 databases. PostgreSQL for the source of truth, Redis for cache, Elasticsearch for search, Cassandra or Kafka for event streams. Your interview answer should reflect this reality, not pick one database and call it done.
+    </div>
+  </section>
+
+  <!-- SECTION 4: Q&A -->
+  <section id="qa">
+    <div class="section-label">// 04 — Interview Q&A</div>
+    <h2>Commonly Asked Questions (With Real Answers)</h2>
+
+    <!-- Q1 -->
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">Q</div>
+        <p>Design a URL shortener like bit.ly. Which database would you choose and why?</p>
+      </div>
+      <div class="qa-answer">
+        <div class="qa-a-label">// Strong Answer</div>
+        <p>First I'd ask: what's the read-to-write ratio? For a URL shortener, it's probably 100:1 or higher — millions of redirects for every URL created. That tells me reads are the bottleneck, not writes.</p>
+
+        <p>For the core data — shortcode → original URL mapping — this is a simple key-value lookup. The data is small (under 1KB per record), write-once read-many, and no complex queries are needed. <strong>I'd use a relational database like PostgreSQL as the source of truth</strong> because it's reliable, supports easy analytics (which URLs are most clicked), and the write volume is manageable.</p>
+
+        <p>But for the actual redirect path, I'd put <strong>Redis in front of it as a cache</strong>. Short codes that are popular get cached for 24 hours. 99% of traffic gets served from Redis at sub-millisecond speeds. PostgreSQL only gets hit for cache misses.</p>
+
+        <p><strong>The schema is simple:</strong></p>
+        <div class="code-block">
+<span class="cm">-- PostgreSQL: source of truth</span>
+<span class="kw">CREATE TABLE</span> urls (
+  id         BIGSERIAL PRIMARY KEY,
+  short_code VARCHAR(8) UNIQUE NOT NULL,
+  long_url   TEXT NOT NULL,
+  user_id    BIGINT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ
+);
+<span class="cm">-- Index on what we query by</span>
+<span class="kw">CREATE INDEX</span> idx_short_code <span class="kw">ON</span> urls (short_code);
+        </div>
+
+        <div class="code-block">
+<span class="cm">-- Redis: cache layer</span>
+<span class="cm">-- key: "url:{short_code}" → long_url</span>
+<span class="cm">-- TTL: 86400s (24 hours) for hot links</span>
+SET url:abc123 <span class="str">"https://example.com/very-long-path"</span> EX <span class="num">86400</span>
+        </div>
+
+        <p>If the interviewer then says "now design the analytics — how many clicks per URL per day?" — that's when I'd add a <strong>Cassandra or a time-series DB</strong> for click events, or stream events through Kafka into a data warehouse for aggregation.</p>
+
+        <div class="insight-box">
+          <div class="insight-label">What made this answer strong</div>
+          <p>Started with a clarifying question (read/write ratio), justified each database choice separately, showed layered architecture, and proactively extended to the next likely follow-up.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">Q</div>
+        <p>When would you NOT use a relational database? Walk me through a real situation.</p>
+      </div>
+      <div class="qa-answer">
+        <div class="qa-a-label">// Strong Answer</div>
+        <p>Great question, and the honest answer is: fewer situations than the NoSQL hype would suggest. But there are real cases.</p>
+
+        <p><strong>Case 1 — Schema is genuinely unpredictable.</strong> Say you're building a product catalog for an e-commerce site where different product categories have wildly different attributes. A TV has screen size, refresh rate, resolution. A t-shirt has size, color, fabric. You'd either need a giant table with hundreds of nullable columns, or an entity-attribute-value anti-pattern in SQL. A document store like MongoDB handles this naturally — each product document has only the fields relevant to its category.</p>
+
+        <p><strong>Case 2 — Write throughput SQL can't keep up with.</strong> Imagine an activity feed system where 50 million users are liking, commenting, posting all day — that's potentially millions of writes per second across the platform. A single PostgreSQL primary hits its write ceiling. You'd need Cassandra or DynamoDB because they distribute writes across nodes without a bottleneck primary.</p>
+
+        <p><strong>Case 3 — You need genuinely infinite horizontal scale.</strong> DynamoDB at Amazon handles 89 million requests per second at peak. You cannot shard a relational database to that scale without enormous complexity. At that point, you give up flexible querying and embrace the NoSQL constraint consciously.</p>
+
+        <div class="trap-box">
+          <div class="trap-label">❌ What Juniors Get Wrong</div>
+          <p>"NoSQL scales better, so just use that." — Wrong. NoSQL scales writes horizontally but sacrifices joins and transactions. If you need both scale AND transactions, look at Google Spanner or CockroachDB (distributed SQL). There's a middle ground.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">Q</div>
+        <p>Explain the CAP theorem and how it affects your database choice in a real system.</p>
+      </div>
+      <div class="qa-answer">
+        <div class="qa-a-label">// Strong Answer</div>
+        <p>CAP stands for Consistency, Availability, and Partition Tolerance. The theorem says: during a network partition (nodes can't talk to each other), you must choose between Consistency and Availability. You can't have both. Partition tolerance isn't optional in distributed systems — networks fail, so you always have P.</p>
+
+        <p><strong>In practice this means:</strong></p>
+        <ul class="checklist">
+          <li><strong>CP systems (Consistency + Partition Tolerance)</strong> — Will refuse requests rather than serve stale data. Example: HBase, MongoDB (with strong consistency configured), Zookeeper. Use for: financial systems, inventory where overselling is catastrophic. You'd rather show an error than show wrong stock count.</li>
+          <li><strong>AP systems (Availability + Partition Tolerance)</strong> — Will serve requests even if data might be slightly stale. Example: Cassandra, DynamoDB (eventually consistent). Use for: social media feeds, product recommendations, shopping carts. A slightly stale feed is fine. Going down is not.</li>
+        </ul>
+
+        <div class="senior-say">
+          When you're in an interview, don't just define CAP — apply it. Say something like: "For our payment processing service, I'd choose a CP system because a customer seeing their payment fail is better than charging them twice. But for the notification service showing unread count, AP is fine — if they see 5 instead of 6 for a second, no one cares."
+        </div>
+
+        <p>Also mention <strong>PACELC</strong> if you want to stand out — it extends CAP to also consider latency vs consistency trade-offs even when there's no partition. Cassandra lets you tune consistency per query (ONE, QUORUM, ALL). That's real-world nuance interviewers love to hear.</p>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">Q</div>
+        <p>Design the database layer for a ride-sharing app like Uber or Ola. What databases would you use for different parts of the system?</p>
+      </div>
+      <div class="qa-answer">
+        <div class="qa-a-label">// Strong Answer</div>
+        <p>A ride-sharing app has multiple distinct data domains that need different databases. Let me break it down by domain:</p>
+
+        <table class="decision-table">
+          <thead>
+            <tr><th>Domain</th><th>Data Type</th><th>Database Choice</th><th>Reason</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>User accounts, Driver profiles</td>
+              <td>Structured, relational</td>
+              <td><span class="tag tag-sql">PostgreSQL</span></td>
+              <td>ACID needed; users link to payments, rides, ratings</td>
+            </tr>
+            <tr>
+              <td>Payments, Earnings</td>
+              <td>Financial transactions</td>
+              <td><span class="tag tag-sql">PostgreSQL + Stripe</span></td>
+              <td>ACID non-negotiable; money must never be lost</td>
+            </tr>
+            <tr>
+              <td>Driver location tracking (live)</td>
+              <td>Real-time geo updates (1/sec per driver)</td>
+              <td><span class="tag tag-cache">Redis + Geo</span></td>
+              <td>In-memory, sub-ms lookup; Redis GEOADD/GEODIST handles proximity</td>
+            </tr>
+            <tr>
+              <td>Trip history, Ride events</td>
+              <td>Append-only, time-ordered</td>
+              <td><span class="tag tag-nosql">Cassandra</span></td>
+              <td>High write volume; query by driver_id + time range = native partition key</td>
+            </tr>
+            <tr>
+              <td>Notifications, Real-time status</td>
+              <td>Pub/sub, ephemeral messages</td>
+              <td><span class="tag tag-cache">Redis Pub/Sub or Kafka</span></td>
+              <td>Driver accepted/ETA updates don't need persistence beyond delivery</td>
+            </tr>
+            <tr>
+              <td>Analytics — surge pricing model, heatmaps</td>
+              <td>Aggregated event data</td>
+              <td><span class="tag tag-search">BigQuery / Redshift</span></td>
+              <td>OLAP queries on billions of trip events for BI team</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>The key insight here is that the <strong>driver location problem is a completely different database problem</strong> from the payment problem. Uber actually uses a custom geospatial system for matching, but Redis with its Geo commands is a reasonable interview-level answer for the location layer.</p>
+
+        <div class="insight-box">
+          <div class="insight-label">Follow-up: How do you keep these in sync?</div>
+          <p>Use event-driven architecture. When a ride completes, publish an event to Kafka. Consumers update the analytics DB, send notification, update billing. The databases are decoupled and updated asynchronously. This is the architecture pattern behind every large-scale app — not one DB, but a mesh of specialized stores synced via events.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">Q</div>
+        <p>How would you design the database for a Twitter-like feed system?</p>
+      </div>
+      <div class="qa-answer">
+        <div class="qa-a-label">// Strong Answer</div>
+        <p>This is a famous hard problem. There are two approaches — <strong>fan-out on write</strong> vs <strong>fan-out on read</strong>. Let me explain both and when to use which.</p>
+
+        <p><strong>Approach 1 — Fan-out on write (Push model):</strong> When a user posts a tweet, immediately write it to the feed of every follower. Reading the feed is just a cache lookup.</p>
+
+        <div class="code-block">
+<span class="cm">-- When @virat posts a tweet:</span>
+<span class="cm">-- 1. Store tweet in primary DB (PostgreSQL)</span>
+<span class="cm">-- 2. Get all followers (PostgreSQL)</span>
+<span class="cm">-- 3. Write tweet_id to each follower's feed list</span>
+LPUSH feed:user_id_123 tweet_id_999   <span class="cm">-- Redis list</span>
+LPUSH feed:user_id_456 tweet_id_999
+<span class="cm">-- ... for each follower (async, via Kafka)</span>
+        </div>
+
+        <p><strong>Problem:</strong> Celebrities (Virat Kohli, Sachin Tendulkar) have 50 million followers. One tweet = 50M Redis writes. This is called the "celebrity problem" or "hot key problem".</p>
+
+        <p><strong>Approach 2 — Fan-out on read (Pull model):</strong> Only store tweets in one place. When a user opens their feed, query the tweets of everyone they follow, merge them, sort by time. No pre-computation needed.</p>
+
+        <p><strong>Problem:</strong> If you follow 500 people, reading the feed means 500 DB queries merged and sorted. Slow.</p>
+
+        <p><strong>The real answer (hybrid — what Twitter actually does):</strong></p>
+        <ul class="checklist">
+          <li>For regular users: fan-out on write. Pre-populate their feed in Redis.</li>
+          <li>For celebrities (>1M followers): fan-out on read. Don't pre-populate. When you request your feed, merge the pre-computed feeds of everyone you follow, and then fetch the last few tweets from any celebrities you follow separately and merge in real-time.</li>
+          <li>Storage layer: tweets stored in a distributed store (Cassandra), feed lists stored in Redis, user graph stored in PostgreSQL or a separate graph store.</li>
+        </ul>
+
+        <div class="senior-say">
+          This question is designed to see if you know that there's no perfect solution — only trade-offs. The interviewer wants to hear you say "it depends on whether the user is a celebrity or a normal user" and propose the hybrid model. That's the senior-level answer.
+        </div>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">Q</div>
+        <p>How do you handle database scaling when your single PostgreSQL instance starts hitting limits?</p>
+      </div>
+      <div class="qa-answer">
+        <div class="qa-a-label">// Strong Answer — Give this in layers</div>
+        <p>This is a step-by-step problem. You don't jump straight to sharding. Here's the exact progression I'd walk through:</p>
+
+        <ol class="answer-structure">
+          <li><strong>Add a read replica first.</strong> 80% of web app traffic is reads. A read replica immediately doubles your read capacity. Route all SELECT queries to the replica, all writes to primary. Almost no application changes needed. This solves most problems.</li>
+          <li><strong>Add a caching layer (Redis) in front of reads.</strong> For data that's read frequently but changes infrequently (user profile, product data), cache at the application layer. Cache hit ratio of 90% means your DB sees 10% of the traffic. Measure and cache your hottest queries.</li>
+          <li><strong>Vertical scaling.</strong> If you're on a 4-core 16GB machine, move to a 32-core 256GB machine. RDS/Cloud databases make this a config change. Often buys you 12-18 months. Cheap and underrated.</li>
+          <li><strong>Connection pooling (PgBouncer).</strong> PostgreSQL is heavy per connection. If you have 1000 app servers each opening 10 connections, that's 10,000 connections — PostgreSQL chokes. PgBouncer pools connections, multiplexing 10,000 app connections into 100 DB connections.</li>
+          <li><strong>Table partitioning.</strong> Before sharding across machines, partition within one machine. Orders table → partition by created_at month. PostgreSQL handles queries on the right partition automatically. Queries that filter by date are now 100x faster.</li>
+          <li><strong>Functional decomposition / sharding by service.</strong> Split the database by domain. Payments DB separate from Notifications DB separate from User DB. Different services own different schemas. This is "vertical sharding" — split by feature, not by row.</li>
+          <li><strong>Horizontal sharding (last resort).</strong> Split one table across multiple databases by a shard key (e.g., user_id % 4 → DB0, DB1, DB2, DB3). Complexity explodes: no cross-shard joins, distributed transactions are hard, rebalancing is painful. Only do this when everything else fails.</li>
+        </ol>
+
+        <div class="trap-box">
+          <div class="trap-label">❌ Junior Mistake</div>
+          <p>Jumping straight to "I'd shard the database." Sharding is the nuclear option. Every step before it is cheaper, simpler, and should be exhausted first. An interviewer who hears "I'd add a read replica and Redis cache first" will be more impressed than someone who immediately says "horizontal sharding."</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">Q</div>
+        <p>Design a rate limiter. Which database/data store would you use?</p>
+      </div>
+      <div class="qa-answer">
+        <div class="qa-a-label">// Strong Answer</div>
+        <p>A rate limiter needs to track how many requests a user/IP has made in a time window (e.g., 100 requests per minute). The data access pattern is: increment a counter on every request and check if it exceeds the limit — in a single atomic operation.</p>
+
+        <p><strong>Redis is the obvious and correct choice here.</strong> Here's why:</p>
+        <ul class="checklist">
+          <li>Counters need atomic increment + check — Redis's INCR is atomic, no race conditions</li>
+          <li>TTL is native — set the key to expire after 60 seconds, no cleanup job needed</li>
+          <li>Sub-millisecond — adds no meaningful latency to the request path</li>
+          <li>Can be clustered for multi-region rate limiting</li>
+        </ul>
+
+        <div class="code-block">
+<span class="cm">-- Fixed Window algorithm using Redis</span>
+<span class="cm">-- Key: "rl:{user_id}:{minute}" e.g., "rl:user_123:2024-01-15-10-32"</span>
+
+<span class="fn">FUNCTION</span> is_allowed(user_id, limit=<span class="num">100</span>):
+  key = <span class="str">f"rl:{user_id}:{current_minute()}"</span>
+  count = INCR key          <span class="cm">-- atomic increment</span>
+  <span class="kw">IF</span> count == <span class="num">1</span>:
+    EXPIRE key <span class="num">60</span>           <span class="cm">-- set TTL on first request</span>
+  <span class="kw">RETURN</span> count <= limit    <span class="cm">-- allow or deny</span>
+        </div>
+
+        <p><strong>If the interviewer asks about the Sliding Window algorithm</strong> (more accurate, avoids burst at window edges): use Redis Sorted Sets. Store each request's timestamp as a score, use ZRANGEBYSCORE to count requests in the last 60 seconds, remove expired entries with ZREMRANGEBYSCORE. Slightly more complex but much more accurate.</p>
+
+        <p><strong>Why not a SQL database?</strong> Because rate limiting is on the hot path of every API request. Adding a SQL round-trip (even 5ms) to every request would add 5ms to every API call across your entire platform. At 100K req/sec, that's a bottleneck. Redis at 0.1ms is invisible.</p>
+      </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">Q</div>
+        <p>What is database denormalization and when would you use it intentionally?</p>
+      </div>
+      <div class="qa-answer">
+        <div class="qa-a-label">// Strong Answer</div>
+        <p>Normalization removes data duplication — every piece of data lives in exactly one place. Denormalization intentionally duplicates data to make reads faster at the cost of write complexity.</p>
+
+        <p><strong>When to denormalize:</strong></p>
+        <ul class="checklist">
+          <li>Your most common query joins 5+ tables and runs thousands of times per second — denormalize by storing the computed result</li>
+          <li>You're using a NoSQL database that doesn't support joins (Cassandra, DynamoDB) — you have no choice but to denormalize</li>
+          <li>Analytics/reporting queries aggregate data that barely changes — pre-aggregate into a summary table</li>
+        </ul>
+
+        <p><strong>Real example — Swiggy/Zomato order history:</strong></p>
+        <div class="code-block">
+<span class="cm">-- Normalized: to show order history, you need:</span>
+<span class="cm">-- orders JOIN order_items JOIN restaurants JOIN dishes</span>
+<span class="cm">-- That's 4 table lookups for every order history page load</span>
+
+<span class="cm">-- Denormalized order document (stored as JSON or in Cassandra):</span>
+{
+  "order_id": <span class="str">"ord_123"</span>,
+  "restaurant_name": <span class="str">"Meghana Foods"</span>,   <span class="cm">// duplicated</span>
+  "restaurant_logo_url": <span class="str">"..."</span>,          <span class="cm">// duplicated</span>
+  "items": [
+    { "name": <span class="str">"Chicken Biryani"</span>, "price": <span class="num">280</span> }  <span class="cm">// duplicated</span>
+  ],
+  "total": <span class="num">280</span>,
+  "ordered_at": <span class="str">"2024-01-15T19:30:00Z"</span>
+}
+<span class="cm">// Single document read = instant. No joins needed.</span>
+        </div>
+
+        <p>The trade-off: if Meghana Foods changes its logo, you'd normally update one row. With denormalization, you'd need to update every historical order document — but for an order history that never changes after completion, this is actually fine. The restaurant logo at the time of order is what matters historically.</p>
+
+        <div class="senior-say">
+          Denormalization is one of the most misunderstood concepts. Juniors think "denormalization = bad practice." Seniors know it's a deliberate performance optimization. The key is knowing what invariants break and whether that's acceptable for your use case.
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- SECTION 5: SCENARIOS -->
+  <section id="scenarios">
+    <div class="section-label">// 05 — Real Scenarios</div>
+    <h2>Full System Scenarios — Walk Through My Thinking</h2>
+
+    <!-- Scenario 1 -->
+    <div class="scenario">
+      <div class="scenario-header">
+        <div class="scenario-title">🛒 Scenario: Design Flipkart's Flash Sale System</div>
+        <div class="scenario-subtitle">The product has 10,000 units. 1 million users hit "Buy Now" in the first 5 seconds.</div>
+      </div>
+      <div class="scenario-body">
+        <p>This is one of the hardest database problems in e-commerce: <strong>inventory management under extreme concurrency</strong>. The danger: two users both see "1 unit left," both click buy, both get a confirmation, you've oversold. That's a real business disaster.</p>
+
+        <h4>The Database Strategy</h4>
+        <p><strong>Step 1 — Redis for inventory counter (not PostgreSQL).</strong> Before the sale, move the inventory count to Redis. Why? PostgreSQL can handle maybe 10,000 writes/sec on a good machine. Redis handles 1,000,000 writes/sec. The atomic DECR command in Redis means no overselling:</p>
+
+        <div class="code-block">
+<span class="cm">-- Atomic decrement in Redis (no race conditions)</span>
+<span class="fn">FUNCTION</span> reserve_item(product_id):
+  key = <span class="str">f"inventory:{product_id}"</span>
+  remaining = DECR key           <span class="cm">-- atomic, thread-safe</span>
+  <span class="kw">IF</span> remaining < <span class="num">0</span>:
+    INCR key                     <span class="cm">-- rollback</span>
+    <span class="kw">RETURN</span> "sold_out"
+  <span class="kw">RETURN</span> "reserved"
+        </div>
+
+        <p><strong>Step 2 — Queue the orders, don't process immediately.</strong> Don't write to PostgreSQL on the request path. When a user's Redis reservation succeeds, push to a Kafka queue. A consumer reads from Kafka and writes to PostgreSQL with proper ACID transaction (deduct inventory, create order, charge payment). This decouples the high-traffic request from slow DB writes.</p>
+
+        <p><strong>Step 3 — What happens to PostgreSQL?</strong> It becomes the system of record, processing at its own pace. The eventual consistency is acceptable here — the user sees "Order Confirmed" immediately (based on Redis reservation) and gets a payment confirmation email a few seconds later when the queue processes it.</p>
+
+        <div class="decision-flow">
+          <div class="flow-step"><div class="step-num">STEP 1</div><div class="step-label">Redis DECR (atomic)</div></div>
+          <div class="flow-step"><div class="step-num">STEP 2</div><div class="step-label">Kafka Queue push</div></div>
+          <div class="flow-step"><div class="step-num">STEP 3</div><div class="step-label">Consumer → PostgreSQL</div></div>
+          <div class="flow-step"><div class="step-num">STEP 4</div><div class="step-label">Payment + Confirmation</div></div>
+        </div>
+
+        <div class="insight-box">
+          <div class="insight-label">Key Insight</div>
+          <p>This is not "pick one database." It's using Redis for speed and atomic counting, Kafka for buffering, and PostgreSQL for durability. Knowing when each layer does its job is what separates a junior answer from a senior one.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scenario 2 -->
+    <div class="scenario">
+      <div class="scenario-header">
+        <div class="scenario-title">📊 Scenario: Design Razorpay's Transaction History & Analytics</div>
+        <div class="scenario-subtitle">Show a merchant their last 10,000 transactions. Also power their analytics dashboard.</div>
+      </div>
+      <div class="scenario-body">
+        <p>This scenario has two completely different workloads hiding in one question: <strong>OLTP</strong> (show me my transactions — fast, individual lookups) and <strong>OLAP</strong> (show me analytics charts — slow aggregations on millions of rows). The mistake is using one database for both.</p>
+
+        <h4>OLTP Layer — Merchant Transaction Lookup</h4>
+        <p>A merchant viewing their recent transactions is a simple query: <code>SELECT * FROM transactions WHERE merchant_id = X ORDER BY created_at DESC LIMIT 100</code>. This hits <strong>PostgreSQL with proper indexing</strong>. The index on (merchant_id, created_at DESC) makes this fast even with 100M rows.</p>
+
+        <p>But if a merchant has 5 million transactions and wants to search by customer name or payment method — that's full-text search. You'd sync to <strong>Elasticsearch</strong> and let them search there without hammering the transactional DB.</p>
+
+        <h4>OLAP Layer — Analytics Dashboard</h4>
+        <p>Queries like "What was my revenue by state in Q3?" or "Which payment method has the highest success rate?" require scanning millions of rows with aggregations. Running this on PostgreSQL would lock up your operational database.</p>
+
+        <p>Solution: Stream all transaction events to a <strong>data warehouse (BigQuery/Redshift)</strong> via a CDC pipeline (Debezium reads PostgreSQL WAL → Kafka → BigQuery). The analytics dashboard queries BigQuery, which is columnar and built for this exact workload — a query scanning 500M rows takes 3 seconds instead of 5 minutes.</p>
+
+        <div class="code-block">
+<span class="cm">-- PostgreSQL: OLTP query (fast, indexed)</span>
+<span class="kw">SELECT</span> id, amount, status, created_at
+<span class="kw">FROM</span> transactions
+<span class="kw">WHERE</span> merchant_id = <span class="num">98765</span>
+  <span class="kw">AND</span> created_at > NOW() - INTERVAL <span class="str">'30 days'</span>
+<span class="kw">ORDER BY</span> created_at <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">100</span>;
+
+<span class="cm">-- BigQuery: OLAP query (analytics, columnar scan — never run this on Postgres)</span>
+<span class="kw">SELECT</span>
+  DATE_TRUNC(created_at, MONTH) <span class="kw">AS</span> month,
+  state,
+  SUM(amount) <span class="kw">AS</span> total_revenue,
+  COUNT(*) <span class="kw">AS</span> transaction_count
+<span class="kw">FROM</span> transactions_warehouse
+<span class="kw">WHERE</span> merchant_id = <span class="num">98765</span>
+  <span class="kw">AND</span> created_at BETWEEN <span class="str">'2024-07-01'</span> <span class="kw">AND</span> <span class="str">'2024-09-30'</span>
+<span class="kw">GROUP BY</span> <span class="num">1</span>, <span class="num">2</span>
+<span class="kw">ORDER BY</span> <span class="num">1</span>;
+        </div>
+      </div>
+    </div>
+
+    <!-- Scenario 3 -->
+    <div class="scenario">
+      <div class="scenario-header">
+        <div class="scenario-title">🔍 Scenario: Design Swiggy's Restaurant Search & Discovery</div>
+        <div class="scenario-subtitle">Search "Biryani near me", filter by rating, diet, cuisine, price. Sort by relevance.</div>
+      </div>
+      <div class="scenario-body">
+        <p>This is a <strong>search + geospatial</strong> problem. The temptation is to add LIKE queries to your main restaurant DB. Do not do this.</p>
+
+        <h4>Why Not Just PostgreSQL?</h4>
+        <p>A LIKE '%biryani%' query on 500,000 restaurants is a sequential scan. It doesn't use indexes and gets worse as you add filters (rating > 4, isVeg = true, distance < 5km). PostgreSQL's full-text search (tsvector) is better but still not built for fuzzy matching, typo tolerance, or relevance scoring.</p>
+
+        <h4>The Right Architecture</h4>
+        <p><strong>Source of truth:</strong> PostgreSQL stores restaurant master data — menus, ratings, hours, address. Updated when restaurants onboard or update details.</p>
+
+        <p><strong>Search layer:</strong> Elasticsearch gets a synced copy of restaurant data with GeoPoint fields. It handles:</p>
+        <ul class="checklist">
+          <li>Full-text search with fuzzy matching ("byriani" → "Biryani")</li>
+          <li>Geospatial distance filter — GEODISTANCE query filters restaurants within 5km of user</li>
+          <li>Multi-filter — cuisine, rating, dietary preference all applied as Elasticsearch filters</li>
+          <li>Relevance scoring — custom scoring formula: rating × recency × distance × sponsored boost</li>
+        </ul>
+
+        <div class="code-block">
+<span class="cm">// Elasticsearch query concept</span>
+{
+  <span class="str">"query"</span>: {
+    <span class="str">"bool"</span>: {
+      <span class="str">"must"</span>: [
+        { <span class="str">"match"</span>: { <span class="str">"menu_items"</span>: { <span class="str">"query"</span>: <span class="str">"biryani"</span>, <span class="str">"fuzziness"</span>: <span class="str">"AUTO"</span> } } }
+      ],
+      <span class="str">"filter"</span>: [
+        { <span class="str">"geo_distance"</span>: { <span class="str">"distance"</span>: <span class="str">"5km"</span>, <span class="str">"location"</span>: { <span class="str">"lat"</span>: <span class="num">12.9716</span>, <span class="str">"lon"</span>: <span class="num">77.5946</span> } } },
+        { <span class="str">"range"</span>: { <span class="str">"rating"</span>: { <span class="str">"gte"</span>: <span class="num">3.5</span> } } },
+        { <span class="str">"term"</span>: { <span class="str">"is_open"</span>: <span class="kw">true</span> } }
+      ]
+    }
+  },
+  <span class="str">"sort"</span>: [<span class="str">"_score"</span>, { <span class="str">"delivery_time_mins"</span>: <span class="str">"asc"</span> }]
+}
+        </div>
+
+        <p><strong>Sync strategy:</strong> When a restaurant updates their menu or gets new ratings, update PostgreSQL first (source of truth), then update Elasticsearch asynchronously via an event (Kafka consumer). Elasticsearch might be 1-2 seconds stale — that's fine for a search result.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- SECTION 6: TRAPS -->
+  <section id="traps">
+    <div class="section-label">// 06 — Failure Modes</div>
+    <h2>Common Traps That Kill Interviews</h2>
+
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">!</div>
+        <p>Trap 1: Picking a database by familiarity, not fit</p>
+      </div>
+      <div class="qa-answer">
+        <p>Saying "I'd use MongoDB because I know it well" is the fastest way to fail. The interviewer wants to see you pick based on requirements, not comfort. If you only know one database, learn at least the <em>use cases</em> for 5 categories so you can speak to trade-offs even if you haven't implemented them.</p>
+        <div class="trap-box">
+          <div class="trap-label">Never Say This</div>
+          <p>"I'd use MySQL because that's what I use at work." — Replace with: "Given the transactional requirements here, MySQL/PostgreSQL would be appropriate because..."</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">!</div>
+        <p>Trap 2: Ignoring the operational complexity of your choice</p>
+      </div>
+      <div class="qa-answer">
+        <p>Every database has an operational cost. Cassandra is powerful but requires expertise to tune compaction, repair, and rebalance. If your team is 5 engineers, proposing Cassandra + Kafka + Elasticsearch for a startup's first version is over-engineering that will slow you down. Mention this trade-off: "At this scale, I'd start with PostgreSQL and Redis. Cassandra would make sense when we hit X write volume and have the ops team to support it."</p>
+        <div class="insight-box">
+          <div class="insight-label">Maturity Signal</div>
+          <p>Engineers who understand operational complexity — not just technical fit — show they've shipped and maintained real systems.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">!</div>
+        <p>Trap 3: Not mentioning indexes when talking about query performance</p>
+      </div>
+      <div class="qa-answer">
+        <p>A huge percentage of "my database is slow" problems are actually missing index problems. Whenever you design a table, explicitly talk about what indexes you'd create and why. This shows you think about query plans, not just schema.</p>
+        <div class="code-block">
+<span class="cm">-- Don't just say "I'd store orders in PostgreSQL"</span>
+<span class="cm">-- Say what indexes and why:</span>
+
+<span class="kw">CREATE INDEX</span> idx_orders_user_created
+  <span class="kw">ON</span> orders (user_id, created_at <span class="kw">DESC</span>);
+<span class="cm">-- Covers: "show me user's recent orders" — composite index</span>
+<span class="cm">-- user_id filters first, created_at sorts in index (no sort step)</span>
+
+<span class="kw">CREATE INDEX</span> idx_orders_status
+  <span class="kw">ON</span> orders (status)
+  <span class="kw">WHERE</span> status = <span class="str">'pending'</span>;  <span class="cm">-- partial index: only indexes active rows</span>
+<span class="cm">-- 95% of orders are 'completed' — partial index is tiny and fast</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">!</div>
+        <p>Trap 4: Treating the cache as the database</p>
+      </div>
+      <div class="qa-answer">
+        <p>Redis is not your primary store (unless you're doing ephemeral data like session tokens). If your Redis goes down, you should be able to rebuild it from your primary database. Candidates sometimes design systems where losing the Redis instance means data loss. Always ask: "If this cache is lost, can I reconstruct it?" If the answer is no, Redis isn't a cache — it's a database being misused.</p>
+      </div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-question">
+        <div class="qa-q-icon">!</div>
+        <p>Trap 5: Not talking about data migration and schema evolution</p>
+      </div>
+      <div class="qa-answer">
+        <p>Interviewers at product companies love this follow-up: "How do you add a new column to this table that has 500M rows without taking downtime?" The answer involves: adding the column with a DEFAULT value (instant in PostgreSQL 11+), backfilling in batches with a background job, then enabling the NOT NULL constraint after backfill. Not knowing this suggests you've never dealt with a large production database.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: PHRASES -->
+  <section id="phrases">
+    <div class="section-label">// 07 — Language & Delivery</div>
+    <h2>Phrases That Sound Senior</h2>
+
+    <p>The same idea delivered differently signals different seniority levels. Here's a translation guide:</p>
+
+    <table class="decision-table">
+      <thead>
+        <tr><th>Junior Phrasing</th><th>Senior Phrasing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"I'd use MongoDB because it's flexible."</td>
+          <td>"Given that our schema is likely to evolve as we add product types, a document store gives us the flexibility to iterate without migrations. I'd use MongoDB here, though I'd define core fields as required."</td>
+        </tr>
+        <tr>
+          <td>"Redis is faster than a database."</td>
+          <td>"For the session storage use case, the data is temporary, sub-millisecond access is required, and the data is reconstructible if lost — Redis is the right choice. I'd set TTLs appropriately and not treat it as a source of truth."</td>
+        </tr>
+        <tr>
+          <td>"We should use a NoSQL database to scale."</td>
+          <td>"Before moving to NoSQL, I'd first evaluate whether read replicas, connection pooling, and a caching layer can meet our SLAs. NoSQL introduces operational complexity and constraints on queries. If we've exhausted SQL scaling options and the access patterns map well to NoSQL — specifically that they're predictable and don't need ad-hoc joins — then I'd explore Cassandra or DynamoDB."</td>
+        </tr>
+        <tr>
+          <td>"I'd add an index."</td>
+          <td>"I'd add a composite index on (user_id, created_at DESC) to cover the most common access pattern. The order of columns matters — user_id has high cardinality and goes first, created_at sorts within that. I'd also monitor the index size since wide tables with many indexes can slow writes."</td>
+        </tr>
+        <tr>
+          <td>"We'd shard the database."</td>
+          <td>"Sharding is complex and I'd resist it as long as possible. Let me first check whether the problem can be solved with read replicas, a CDN cache, query optimization, or functional decomposition. If we genuinely hit PostgreSQL's ceiling, I'd shard by user_id with consistent hashing to distribute evenly, but I'd flag that cross-shard queries become application-level joins."</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>The 60-Second Answer Template</h3>
+    <div class="framework">
+      <p>Use this structure for any database selection question:</p>
+      <ol class="answer-structure">
+        <li><strong>Clarify requirements</strong> — "Let me ask a few questions: what's the read/write ratio, what's the scale expectation, and are there strict consistency requirements?"</li>
+        <li><strong>Identify data shape and access patterns</strong> — "The core data is [X] and the primary access patterns are [Y] and [Z]."</li>
+        <li><strong>State your choice with justification</strong> — "For the primary store, I'd use [DB] because [specific reason tied to their requirements]."</li>
+        <li><strong>Acknowledge the trade-off</strong> — "The trade-off with this choice is [X]. We accept this because [Y]."</li>
+        <li><strong>Add the supporting layers</strong> — "I'd complement this with a Redis cache for [hot reads/sessions/rate limiting] and Elasticsearch for [search functionality]."</li>
+        <li><strong>Address scale evolution</strong> — "At current scale this works. When we hit [threshold], we'd need to [next step — read replica, sharding, etc.]."</li>
+      </ol>
+    </div>
+
+    <div class="senior-say">
+      The interview is a conversation, not a presentation. Pause after your first DB choice and ask: "Does that direction make sense, or is there a constraint I should consider?" Showing you can collaborate under ambiguity is more impressive than having a perfect pre-planned answer. That's what real system design looks like.
+    </div>
+
+    <h3>Quick Reference — The Final Cheat Sheet</h3>
+    <table class="decision-table">
+      <thead>
+        <tr><th>Use Case</th><th>Primary DB</th><th>Supporting Layer</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>User data, payments, orders</td><td><span class="tag tag-sql">PostgreSQL</span></td><td><span class="tag tag-cache">Redis</span> (cache)</td></tr>
+        <tr><td>Product catalog, CMS</td><td><span class="tag tag-nosql">MongoDB</span></td><td><span class="tag tag-search">Elasticsearch</span></td></tr>
+        <tr><td>Session, rate limiting, leaderboard</td><td><span class="tag tag-cache">Redis</span></td><td>—</td></tr>
+        <tr><td>Activity feeds, event logs</td><td><span class="tag tag-nosql">Cassandra</span></td><td><span class="tag tag-cache">Redis</span> (hot reads)</td></tr>
+        <tr><td>Full-text search, autocomplete</td><td><span class="tag tag-search">Elasticsearch</span></td><td>Primary DB (source of truth)</td></tr>
+        <tr><td>Real-time driver/device location</td><td><span class="tag tag-cache">Redis Geo</span></td><td><span class="tag tag-sql">PostgreSQL</span> (history)</td></tr>
+        <tr><td>Infrastructure metrics, IoT</td><td><span class="tag tag-tsdb">InfluxDB / TimescaleDB</span></td><td>—</td></tr>
+        <tr><td>Social graph, recommendations</td><td><span class="tag tag-graph">Neo4j</span></td><td><span class="tag tag-cache">Redis</span> (pre-computed)</td></tr>
+        <tr><td>Analytics, BI reports</td><td><span class="tag tag-search">BigQuery / Redshift</span></td><td>CDC pipeline from OLTP</td></tr>
+        <tr><td>High-scale key-value (AWS)</td><td><span class="tag tag-nosql">DynamoDB</span></td><td><span class="tag tag-cache">DAX cache</span></td></tr>
+      </tbody>
+    </table>
+
+  </section>
+
+</main>
+
+<footer>
+  <p>System Design Interview Guide — Database Selection Edition</p>
+  <p style="margin-top:8px;color:#444">Written from the trenches. Ship real systems, make real trade-offs.</p>
+</footer>
+
+</body>
+</html>

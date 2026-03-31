@@ -1,0 +1,78 @@
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        redis: {
+          50: '#fef2f1',
+          100: '#fde5e2',
+          200: '#fcccc5',
+          300: '#f9a39c',
+          400: '#f6705f',
+          500: '#DC382D',
+          600: '#c63025',
+          700: '#a6281f',
+          800: '#8b221a',
+          900: '#721e17',
+        },
+        navy: {
+          50: '#f8f8fa',
+          100: '#e0e0e6',
+          200: '#c0c0cc',
+          300: '#9090ac',
+          400: '#6060a0',
+          500: '#303080',
+          600: '#252560',
+          700: '#1a1f3a',
+          800: '#1a1a2e',
+          900: '#0f0f1e',
+        },
+      },
+      fontSize: {
+        xs: ['0.75rem', { lineHeight: '1rem' }],
+        sm: ['0.875rem', { lineHeight: '1.25rem' }],
+        base: ['1rem', { lineHeight: '1.5rem' }],
+        lg: ['1.125rem', { lineHeight: '1.75rem' }],
+        xl: ['1.25rem', { lineHeight: '1.75rem' }],
+        '2xl': ['1.5rem', { lineHeight: '2rem' }],
+        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+        '5xl': ['3rem', { lineHeight: '3.5rem' }],
+        '6xl': ['3.75rem', { lineHeight: '4.5rem' }],
+        '7xl': ['4.5rem', { lineHeight: '5.5rem' }],
+        '8xl': ['6rem', { lineHeight: '7rem' }],
+      },
+      fontFamily: {
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          '"Helvetica Neue"',
+          'Arial',
+          'sans-serif',
+        ],
+        mono: [
+          'Monaco',
+          '"Courier New"',
+          'monospace',
+        ],
+      },
+      backdropBlur: {
+        xs: '2px',
+        sm: '4px',
+        md: '12px',
+        lg: '16px',
+        xl: '24px',
+      },
+      boxShadow: {
+        glow: '0 0 20px rgba(220, 56, 45, 0.3)',
+        'glow-lg': '0 0 40px rgba(220, 56, 45, 0.4)',
+      },
+    },
+  },
+  plugins: [],
+}
